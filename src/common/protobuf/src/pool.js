@@ -1,0 +1,1 @@
+module.exports=pool;function pool(alloc,slice,size){var SIZE=size||8192;var MAX=SIZE>>>1;var slab=null;var offset=SIZE;return function pool_alloc(size){if(size<1||size>MAX)return alloc(size);if(offset+size>SIZE){slab=alloc(SIZE);offset=0}var buf=slice.call(slab,offset,offset+=size);if(offset&7)offset=(offset|7)+1;return buf}}

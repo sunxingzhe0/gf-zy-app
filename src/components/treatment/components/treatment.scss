@@ -1,0 +1,28 @@
+.expedited {
+  transform: scale(0.8);
+}
+.list-input {
+  flex: 1;
+}
+.iconfont {
+  margin: 0 30rpx;
+}
+.icon-jiantou::before {
+  display: block;
+  transform: rotate(-90deg);
+}
+.textarea {
+  width: 590rpx;
+  height: 240rpx;
+  margin: 0 auto;
+  padding: 30rpx;
+  font-size: 26rpx;
+  line-height: 36rpx;
+  border-radius: 10rpx;
+  background: #f1f1f1;
+}
+::v-deep {
+  .day-of-week {
+    background-color: #fff;
+  }
+}

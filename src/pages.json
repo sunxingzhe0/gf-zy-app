@@ -1,0 +1,855 @@
+
+{
+  "pages": [
+    // pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+    {
+      "path": "pages/login/userLogin",
+      "style": {
+        "navigationBarTitleText": "登录",
+        "h5": {
+          "titleNView": false
+        }
+      }
+    },
+    {
+      "path": "pages/login/login",
+      "style": {
+        "navigationBarTitleText": "登录",
+        "h5": {
+          "titleNView": false
+        }
+      }
+    },
+    {
+      "path": "pages/index-user",
+      "style": {
+        "navigationBarTitleText": "首页",
+        "enablePullDownRefresh": true,
+        "onReachBottomDistance": 80
+      }
+    },
+    {
+      "path": "pages/login/excessive",
+      "style": {
+        "navigationBarTitleText": "加载中",
+        "h5": {
+          "titleNView": false
+        }
+      }
+    },
+
+    {
+      "path": "pages/index-doctor",
+      "style": {
+        "navigationBarTitleText": "首页"
+      }
+    },
+    {
+      "path": "pages/login/register",
+      "style": {
+        "navigationBarTitleText": "注册"
+      }
+    },
+    {
+      "path": "pages/login/setPassword",
+      "style": {
+        "navigationBarTitleText": "设置密码"
+      }
+    },
+    {
+      "path": "pages/login/forgetPassword",
+      "style": {
+        "navigationBarTitleText": "找回密码"
+      }
+    },
+    {
+      "path": "pages/login/bindAccount",
+      "style": {
+        "navigationBarTitleText": "绑定账号"
+      }
+    },
+    {
+      "path": "pages/login/checkValid",
+      "style": {
+        "navigationBarTitleText": "验证手机号"
+      }
+    },
+    {
+      "path": "pages/doctor/home/home",
+      "style": {
+        "navigationBarTitleText": "首页",
+        "h5": {
+          "titleNView": false
+        }
+      }
+    },
+    {
+      "path": "pages/doctor/user/user",
+      "style": {
+        "navigationBarTitleText": "我的",
+        "h5": {
+          "titleNView": false
+        }
+      }
+    },
+    {
+      "path": "pages/user/home/home",
+      "style": {
+        "navigationBarTitleText": "首页",
+        "mp-weixin": {
+          "usingComponents": {}
+        },
+        "h5": {
+          "titleNView": false
+        }
+      }
+    },
+    {
+      "path": "pages/user/home/web-view",
+      "style": {
+        "navigationBarTitleText": "加载",
+        "mp-weixin": {
+          "usingComponents": {}
+        },
+        "h5": {
+          "titleNView": false
+        }
+      }
+    },
+    {
+      "path": "pages/user/room/room",
+      "style": {
+        "navigationBarTitleText": "诊室",
+        "h5": {
+          "titleNView": false
+        }
+      }
+    },
+    {
+      "path": "pages/user/me/me",
+      "style": {
+        "navigationBarTitleText": "我的",
+        "h5": {
+          "titleNView": false
+        }
+      }
+    },
+    {
+      "path": "pages/web-view/web-view",
+      "style": {}
+    }
+  ],
+  "subPackages": [{
+      "root": "pages-user",
+      "pages": [{
+          "path": "setting/index",
+          "style": {
+            "navigationBarTitleText": "个人信息设置"
+          }
+        },
+        {
+          "path": "setting/resetPassword",
+          "style": {
+            "navigationBarTitleText": "重置密码"
+          }
+        },
+        {
+          "path": "logistics/logistics",
+          "style": {
+            "navigationBarTitleText": "物流详情"
+          }
+        },
+        {
+          "path": "orderSubmit/orderSubmit",
+          "style": {
+            "navigationBarTitleText": "提交订单"
+          }
+        },
+        {
+          "path": "video/video",
+          "style": {
+            "navigationBarTitleText": "诊室"
+          }
+        },
+        {
+          "path": "video/h5video",
+          "style": {
+            "navigationBarTitleText": "H5诊室",
+            "backgroundColor": "#ffffff00" // 设置背景透明防止ios不透明
+          }
+        },
+
+        {
+          "path": "prescription/prescription",
+          "style": {
+            "navigationBarTitleText": "处方详情"
+          }
+        },
+        {
+          "path": "medical/detail",
+          "style": {
+            "navigationBarTitleText": "病历详情"
+          }
+        },
+        {
+          "path": "chat/chat",
+          "style": {
+            "navigationBarTitleText": "诊室",
+            "enablePullDownRefresh": true
+          }
+        },
+        {
+          "path": "changePhone",
+          "style": {
+            "navigationBarTitleText": "修改手机号"
+          }
+        },
+        {
+          "path": "patientManagement/list",
+          "style": {
+            "navigationBarTitleText": "管理就诊人"
+          }
+        },
+        {
+          "path": "patientManagement/detail",
+          "style": {
+            "navigationBarTitleText": "就诊人详情"
+          }
+        },
+        {
+          "path": "patientManagement/add",
+          "style": {
+            "navigationBarTitleText": "新增就诊人"
+          }
+        },
+        {
+          "path": "patientManagement/edit",
+          "style": {
+            "navigationBarTitleText": "新增就诊人"
+          }
+        },
+        {
+          "path": "healthRecords/list",
+          "style": {
+            "navigationBarTitleText": "健康档案"
+          }
+        },
+        {
+          "path": "healthRecords/detail",
+          "style": {
+            "navigationBarTitleText": "档案详情"
+          }
+        },
+        {
+          "path": "myDoctor/list",
+          "style": {
+            "navigationBarTitleText": "我的医生"
+          }
+        },
+        {
+          "path": "myDoctor/detail",
+          "style": {
+            "navigationBarTitleText": "医生详情"
+          }
+        },
+        {
+          "path": "address/list",
+          "style": {
+            "navigationBarTitleText": "收货地址列表"
+          }
+        },
+        {
+          "path": "address/add",
+          "style": {
+            "navigationBarTitleText": "新建地址"
+          }
+        },
+        {
+          "path": "myEvaluate/list",
+          "style": {
+            "navigationBarTitleText": "我的评价"
+          }
+        },
+        {
+          "path": "message/list",
+          "style": {
+            "navigationBarTitleText": "系统消息"
+          }
+        },
+        {
+          "path": "message/detail",
+          "style": {
+            "navigationBarTitleText": "消息详情"
+          }
+        },
+        {
+          "path": "prescriptionOrder/list",
+          "style": {
+            "navigationBarTitleText": "处方订单"
+          }
+        },
+        {
+          "path": "prescriptionOrder/detail",
+          "style": {
+            "navigationBarTitleText": "处方订单详情"
+          }
+        },
+        {
+          "path": "prescriptionOrder/logistics",
+          "style": {
+            "navigationBarTitleText": "物流详情"
+          }
+        },
+        {
+          "path": "serviceOrder/list",
+          "style": {
+            "navigationBarTitleText": "服务订单"
+          }
+        },
+        {
+          "path": "serviceOrder/evaluate",
+          "style": {
+            "navigationBarTitleText": "评价详情"
+          }
+        },
+        {
+          "path": "serviceOrder/detail",
+          "style": {
+            "navigationBarTitleText": "服务订单详情"
+          }
+        },
+        {
+          "path": "home/OrganizationInformation",
+
+          "style": {
+            "navigationBarTitleText": "医院介绍"
+          }
+        },
+        {
+          "path": "home/information/HospitalInformation",
+          "style": {
+            "navigationBarTitleText": "健康资讯"
+          }
+        },
+        {
+          "path": "home/information/InformationDetail",
+          "style": {
+            "navigationBarTitleText": "资讯详情"
+          }
+        },
+        {
+          "path": "home/online/Consultation",
+          "style": {
+            "navigationBarTitleText": "在线咨询"
+          }
+        },
+        {
+          "path": "home/doctordetail/DoctorDetail",
+          "style": {
+            "navigationBarTitleText": "医生详情"
+          }
+        },
+        {
+          "path": "notice/list",
+          "style": {
+            "navigationBarTitleText": "公告"
+          }
+        },
+        {
+          "path": "notice/detail",
+          "style": {
+            "navigationBarTitleText": "公告详情"
+          }
+        },
+        {
+          "path": "myAppointment/list",
+          "style": {
+            "navigationBarTitleText": "我的预约",
+            "enablePullDownRefresh": true,
+            "backgroundColor": "#f2f2f2"
+          }
+        },
+        {
+          "path": "myAppointment/detail",
+          "style": {
+            "navigationBarTitleText": "门诊预约详情",
+            "backgroundColor": "#f2f2f2"
+          }
+        },
+        {
+          "path": "doctorAdvice/list",
+          "style": {
+            "navigationBarTitleText": "在线医嘱",
+            "enablePullDownRefresh": true,
+            "backgroundColor": "#f2f2f2"
+          }
+        },
+        {
+          "path": "doctorAdvice/detail",
+          "style": {
+            "navigationBarTitleText": "在线医嘱详情",
+            "backgroundColor": "#f2f2f2"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages-doctor",
+      "pages": [{
+          "path": "room/room",
+          "style": {
+            "navigationBarTitleText": "在线复诊",
+            "enablePullDownRefresh": true
+          }
+        },
+        {
+          "path": "chat/chat",
+          "style": {
+            "navigationBarTitleText": "我的诊室",
+            "enablePullDownRefresh": true
+          }
+        },
+        {
+          "path": "video/video",
+          "style": {
+            "navigationBarTitleText": "我的诊室",
+            "backgroundColor": "#ffffff00" // 设置背景透明防止ios不透明
+          }
+        },
+        {
+          "path": "treatment/add",
+          "style": {
+            "navigationBarTitleText": "新增处置单"
+          }
+        },
+        {
+          "path": "appointment/add",
+          "style": {
+            "navigationBarTitleText": "新增预约单"
+          }
+        },
+        {
+          "path": "appointment/selectDoctor",
+          "style": {
+            "navigationBarTitleText": "选择预约医生"
+          }
+        },
+        {
+          "path": "appointment/selectDept",
+          "style": {
+            "navigationBarTitleText": "选择预约科室"
+          }
+        },
+        {
+          "path": "historyRecord/historyRecord",
+          "style": {
+            "navigationBarTitleText": "历史就诊记录"
+          }
+        },
+        {
+          "path": "notice/list",
+          "style": {
+            "navigationBarTitleText": "公告"
+          }
+        },
+        {
+          "path": "notice/detail",
+          "style": {
+            "navigationBarTitleText": "公告详情"
+          }
+        },
+        {
+          "path": "user/order/list",
+          "style": {
+            "navigationBarTitleText": "我的订单"
+          }
+        },
+        {
+          "path": "user/order/detail",
+          "style": {
+            "navigationBarTitleText": "订单详情"
+          }
+        },
+        {
+          "path": "user/prescription/list",
+          "style": {
+            "navigationBarTitleText": "我的处方"
+          }
+        },
+        {
+          "path": "user/prescription/detail",
+          "style": {
+            "navigationBarTitleText": "处方详情"
+          }
+        },
+        {
+          "path": "user/prescription/info",
+          "style": {
+            "navigationBarTitleText": "处方单"
+          }
+        },
+        {
+          "path": "user/prescription/add",
+          "style": {
+            "navigationBarTitleText": "新增处方"
+          }
+        },
+        {
+          "path": "treatment/history/index",
+          "style": {
+            "navigationBarTitleText": "我的处置"
+          }
+        },
+        {
+          "path": "treatment/detail/index",
+          "style": {
+            "navigationBarTitleText": "处置单详情"
+          }
+        },
+        {
+          "path": "myEvaluate/list",
+          "style": {
+            "navigationBarTitleText": "我的评价"
+          }
+        },
+        {
+          "path": "myEvaluate/detail",
+          "style": {
+            "navigationBarTitleText": "评价详情"
+          }
+        },
+        {
+          "path": "message/list",
+          "style": {
+            "navigationBarTitleText": "消息"
+          }
+        },
+        {
+          "path": "message/detail",
+          "style": {
+            "navigationBarTitleText": "消息详情"
+          }
+        },
+        {
+          "path": "user/attestation/index",
+          "style": {
+            "navigationBarTitleText": "实名认证"
+          }
+        },
+        {
+          "path": "qrcode/qrcode",
+          "style": {
+            "navigationBarTitleText": "医生二维码"
+          }
+        },
+        {
+          "path": "user/account",
+          "style": {
+            "navigationBarTitleText": "账号信息"
+          }
+        },
+        {
+          "path": "user/qualification",
+          "style": {
+            "navigationBarTitleText": "资质认证"
+          }
+        },
+        {
+          "path": "user/bindPhone",
+          "style": {
+            "navigationBarTitleText": "绑定手机号"
+          }
+        },
+        {
+          "path": "diagnosis/diagnosisList",
+          "style": {
+            "navigationBarTitleText": "诊断"
+          }
+        },
+        {
+          "path": "emr/index",
+          "style": {
+            "navigationBarTitleText": "电子病历"
+          }
+        },
+        {
+          "path": "prescription/prescriptionList",
+          "style": {
+            "navigationBarTitleText": "处方单"
+          }
+        }
+
+      ]
+    },
+   {
+       "root": "pages-zy",
+       "pages": [{
+           "path": "appointmentDoc/deptList",
+           "style": {
+             "navigationBarTitleText": "预约挂号"
+           }
+         },
+         {
+           "path": "appointmentDoc/docList",
+           "style": {
+             "navigationBarTitleText": "选择预约医生"
+           }
+         },
+         {
+           "path": "appointmentDoc/appointmentInfo",
+           "style": {
+             "navigationBarTitleText": "预约挂号选择时间"
+           }
+         },
+         {
+           "path": "outpatientPayment/list",
+           "style": {
+             "navigationBarTitleText": "门诊缴费"
+           }
+         },
+         {
+           "path": "outpatientPayment/detail",
+           "style": {
+             "navigationBarTitleText": "门诊缴费详情"
+           }
+         },
+         {
+           "path": "inpatientServices/detailedList",
+           "style": {
+             "navigationBarTitleText": "住院一日清单"
+           }
+         },
+         {
+           "path": "inpatientServices/listInfo",
+           "style": {
+             "navigationBarTitleText": "住院一日清单详情"
+           }
+         },
+         {
+           "path": "inpatientServices/deposit",
+           "style": {
+             "navigationBarTitleText": "住院押金"
+           }
+         },
+         {
+           "path": "inpatientServices/paymentRecord",
+           "style": {
+             "navigationBarTitleText": "住院缴费记录"
+           }
+         },
+         {
+           "path": "reportQuery/list",
+           "style": {
+             "navigationBarTitleText": "报告查询"
+           }
+         },
+         {
+           "path": "reportQuery/detail",
+           "style": {
+             "navigationBarTitleText": "报告查询详情"
+           }
+         },
+         {
+           "path": "reportQuery/ctImg",
+           "style": {
+             "navigationBarTitleText": "CT影像"
+           }
+         },
+         {
+           "path": "reportQuery/ctImgInfo",
+           "style": {
+             "navigationBarTitleText": "CT影像详情"
+           }
+         },
+         {
+           "path": "registerRecord/list",
+           "style": {
+             "navigationBarTitleText": "挂号记录"
+           }
+         },
+         {
+           "path": "registerRecord/detail",
+           "style": {
+             "navigationBarTitleText": "挂号记录详情"
+           }
+         },
+         {
+           "path": "medicalRecords/list",
+           "style": {
+             "navigationBarTitleText": "就诊记录"
+           }
+         },
+         {
+           "path": "medicalRecords/detail",
+           "style": {
+             "navigationBarTitleText": "病历详情"
+           }
+         },
+         {
+           "path": "myAppointment/list",
+           "style": {
+             "navigationBarTitleText": "我的预约"
+           }
+         },
+         {
+           "path": "myAppointment/detail",
+           "style": {
+             "navigationBarTitleText": "体检预约详情"
+           }
+         },
+         {
+           "path": "bookingPayment/list",
+           "style": {
+             "navigationBarTitleText": "预约缴费"
+           }
+         },
+         {
+           "path": "otherPayment/list",
+           "style": {
+             "navigationBarTitleText": "其他缴费"
+           }
+         },
+         {
+           "path": "evaluate/list",
+           "style": {
+             "navigationBarTitleText": "就医点评"
+           }
+         },
+         {
+           "path": "navigation/inHosNavigate",
+           "style": {
+             "navigationBarTitleText": "院内导航"
+           }
+         },
+         {
+           "path": "navigation/toHosNavigate",
+           "style": {
+             "navigationBarTitleText": "来院导航"
+           }
+         },
+         {
+           "path": "myDoctor/list",
+           "style": {
+             "navigationBarTitleText": "我的医生"
+           }
+         },
+         {
+           "path": "physical/appointment/list",
+           "style": {
+             "navigationBarTitleText": "体检预约"
+           }
+         },
+         {
+           "path": "physical/appointment/detail",
+           "style": {
+             "navigationBarTitleText": "体检预约详情"
+           }
+         },
+         {
+           "path": "physical/appointment/submit",
+           "style": {
+             "navigationBarTitleText": "体检预约信息"
+           }
+         },
+         {
+           "path": "physical/record/list",
+           "style": {
+             "navigationBarTitleText": "体检记录"
+           }
+         },
+         {
+           "path": "physical/record/detail",
+           "style": {
+             "navigationBarTitleText": "体检记录详情"
+           }
+         },
+         {
+           "path": "physical/payment/list",
+           "style": {
+             "navigationBarTitleText": "体检缴费"
+           }
+         },
+         {
+           "path": "physical/payment/detail",
+           "style": {
+             "navigationBarTitleText": "体检缴费详情"
+           }
+         },
+         {
+           "path": "physical/report/list",
+           "style": {
+             "navigationBarTitleText": "体检报告"
+           }
+         },
+         {
+           "path": "physical/report/detail",
+           "style": {
+             "navigationBarTitleText": "体检报告详情"
+           }
+         },
+         {
+           "path": "physical/report/itemInfo",
+           "style": {
+             "navigationBarTitleText": "一般检查"
+           }
+         },
+         {
+           "path": "physical/notice",
+           "style": {
+             "navigationBarTitleText": "体检须知"
+           }
+         },
+         {
+           "path": "starExpert/list",
+           "style": {
+             "navigationBarTitleText": "明星专家"
+           }
+         },
+         {
+           "path": "myPayment/list",
+           "style": {
+             "navigationBarTitleText": "我的缴费"
+           }
+         },
+         {
+           "path": "outpatientPayment/smartWait",
+           "style": {
+             "navigationBarTitleText": "智能候诊"
+           }
+         }
+       ]
+     }
+   ],
+  "preloadRule": {
+    "pages/index-user": {
+      "network": "all",
+      "packages": ["pages-user"]
+    },
+    "pages/index-doctor": {
+      "network": "all",
+      "packages": ["pages-doctor"]
+    }
+  },
+  "globalStyle": {
+    // #ifdef MP-360
+    "navigationStyle": "custom",
+    // #endif
+    "pageOrientation": "portrait",
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "Hello uniapp",
+    "navigationBarBackgroundColor": "#0AB2C1",
+    "backgroundColor": "#F8F8F8",
+    "backgroundColorTop": "#F4F5F6",
+    "backgroundColorBottom": "#F4F5F6",
+    "usingComponents": {}
+  },
+  "condition": {
+    //模式配置，仅开发期间生效
+    "current": 0, //当前激活的模式(list 的索引项)
+    "list": [{
+      "name": "", //模式名称
+      "path": "", //启动页面，必选
+      "query": "" //启动参数，在页面的onLoad函数里面得到
+    }]
+  }
+}

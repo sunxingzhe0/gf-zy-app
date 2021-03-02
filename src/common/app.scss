@@ -1,0 +1,33 @@
+.app-mask {
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    background: rgba(0,0,0,.5);
+    animation: animation-fade-in .3s forwards;
+}
+.app-pop-bottom {
+    bottom: 0;
+    position: fixed;
+    animation: animation-popup-bottom .3s forwards;
+}
+
+@keyframes animation-fade-in {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes animation-popup-bottom {
+    0% {
+        bottom: -100%;
+    }
+    100% {
+        bottom: 0;
+    }
+}

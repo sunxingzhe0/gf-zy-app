@@ -1,0 +1,80 @@
+.ml-20 {
+  margin-left: 20rpx;
+}
+.ml-30 {
+  margin-left: 30rpx;
+}
+.ml-50 {
+  margin-left: 50rpx;
+}
+.mr-20 {
+  margin-right: 20rpx;
+}
+.mt-20 {
+  margin-top: 20rpx;
+}
+.mt-40 {
+  margin-top: 40rpx;
+}
+.align-center {
+  align-items: center;
+}
+.text-right {
+  text-align: right;
+}
+.text-center {
+  text-align: center;
+}
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  box-sizing: border-box;
+  padding: 0 20rpx;
+  background-color: #fff;
+  border-bottom-left-radius: 36rpx;
+  border-bottom-right-radius: 36rpx;
+  box-shadow: 0px 5px 20px 0px rgba(0, 0, 0, 0.15);
+}
+.app-card {
+  background-color: #fff;
+  border-radius: 20rpx;
+  padding: 20rpx;
+  box-shadow: 0 0 8px 0 rgba($color: #000000, $alpha: 0.15);
+}
+.btn {
+  margin: 0;
+  width: 160rpx;
+  line-height: 60rpx;
+  background-color: transparent;
+  border-radius: 50rpx;
+  font-size: 24rpx;
+}
+.btn-primary {
+  background-color: transparent;
+  border: 2rpx solid $uni-color-primary;
+  color: $uni-color-primary;
+
+  &:after {
+    border: none;
+  }
+}
+.btn-black {
+  border: 2rpx solid $uni-text-color-grey;
+  color: $uni-text-color;
+}
+.reverse {
+  transform: rotate(0.5turn);
+}
+.no-pandding {
+  padding: 0 !important;
+}
+.no-border {
+  border: none !important;
+}
+.flex {
+  display: flex;
+  flex-direction: row;
+}

@@ -1,0 +1,15 @@
+{
+    "uni-app": {
+        "scripts": {
+            "mp-dingtalk": { 
+                "title":"冠方咨询服务", 
+                "env": { 
+                    "UNI_PLATFORM": "mp-alipay" 
+                },
+                "define": { 
+                    "MP-DINGTALK": true 
+                }
+            }
+        }
+    }
+}
