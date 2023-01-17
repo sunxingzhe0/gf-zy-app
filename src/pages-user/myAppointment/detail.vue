@@ -2,10 +2,9 @@
   <view :class="{ container: [2, 5].includes(info.state) }">
     <!-- 收到视频聊天邀请 -->
     <video-invitation />
-
-    <view class="top-tip" v-if="info.state == 2">
-      温馨提示：当天的预约挂号无法取消。
-    </view>
+    <!--主页按钮-->
+    <homeIcom />
+    <view class="top-tip" v-if="tipsText()"> 温馨提示：{{ tipsText() }} </view>
     <view
       class="top-bg"
       :style="{
@@ -65,7 +64,7 @@
       <view class="cell">
         <view class="label">预约时段</view>
         <view class="value color-red">
-          {{ info.visitDate }} {{ info.startTime }}~{{ info.endTime }}
+          {{ info.visitDate || '' }} {{ info.startTime }}~{{ info.endTime }}
         </view>
         <view class="tag red" v-if="info.cancel && info.state == 2"
           >已逾期</view
@@ -83,7 +82,7 @@
     <view class="app-card">
       <view class="cell">
         <view class="label">单据号</view>
-        <view class="value">{{ info.documentNo }}</view>
+        <view class="value">{{ info.documentNo || '-' }}</view>
       </view>
       <view class="cell">
         <view class="label">项目</view>
@@ -100,7 +99,7 @@
       <view class="cell">
         <view class="label">创建时间</view>
         <view class="value">
-          {{ info.createTime }}
+          {{ info.createTime || '' }}
         </view>
       </view>
     </view>
@@ -130,24 +129,43 @@
         <view class="value">￥{{ info.backFee }}</view>
       </view>
     </view>
-    <view class="bottom-bar flex-justify-end" v-if="showBottom">
-      <button class="button" v-if="info.state == 5" @click="del">删除</button>
-      <button
+    <!-- <view class="bottom-bar flex-justify-end" v-if="showBottom"> -->
+    <view class="bottom-bar flex-justify-end" v-if="info.state == 1">
+      <!-- <button class="button" v-if="info.state == 5" @click="del">删除</button> -->
+      <!-- <button
         class="button primary"
         v-else-if="info.state == 1"
+        :disabled="compare(info)"
+        @click="openPay"
+      >
+        付款
+      </button> -->
+      <!-- <button class="button" v-if="showCancelButton" @click="cancel">
+        取消
+      </button> -->
+      <button
+        class="button primary"
+        v-if="info.state == 1"
+        :disabled="info.cancel"
         @click="openPay"
       >
         付款
       </button>
-      <button class="button" v-if="showCancelButton" @click="cancel">
-        取消
-      </button>
     </view>
+    <!-- <view
+      class="bottom-bar flex-justify-end"
+      v-if="deptId === 8323 && state === 2"
+    >
+      <button class="button primary" style="width: 100%;" @click="acidSignIn">
+        签到
+      </button>
+    </view> -->
 
     <popup-pay
       ref="pay"
       :type="true"
       @success="back"
+      @cancel="cancelPay"
       @payTap="orderPay"
     ></popup-pay>
   </view>
@@ -159,16 +177,31 @@ import {
   delAppointment,
   getUserDetail,
   verifyBack,
+  acidSignIn,
 } from '@/common/request/userAppointment'
+// import {
+//   orderDetail,
+// } from '../../common/request/index.js'
 import { refund } from '@/common/request/order'
+import dayjs from 'dayjs'
 export default {
   data() {
     return {
       info: {},
+      id: '',
+      state: 0, // 单据状态(用于核酸预约签到)
+      deptId: 0, // 科室id(用于核酸预约签到)
+      orderId: '',
+      patientCard: '',
     }
   },
   onLoad(options) {
-    this.getData(options.id, options.orderId)
+    this.id = options.id
+    this.orderId = options.bizId
+    this.state = Number(options.state)
+    this.deptId = Number(options.deptId)
+    this.getData(options.id, options.bizId)
+    this.patientCard = options.patientCard
   },
   computed: {
     isToday() {
@@ -184,11 +217,51 @@ export default {
     },
   },
   methods: {
+    //我的预约里没有取his数据，不需要显示排队信息
+    tipsText() {
+      let str = ''
+      //1 核酸混检
+      if (
+        (this.info.deptName === '核酸检测门诊' || this.isToday) &&
+        this.info.state == 2
+      ) {
+        str = '如需退号，请到门诊收费室咨询退费'
+      }
+      //2 当日且预约开始时间半个小时以内
+      if (
+        this.isToday &&
+        dayjs().isAfter(
+          dayjs(
+            this.info.visitDate + ' ' + this.info.startTime + ':00',
+          ).subtract(30, 'minutes'),
+        ) &&
+        dayjs().isBefore(
+          dayjs(this.info.visitDate + ' ' + this.info.endTime + ':00'),
+        ) &&
+        this.info.state == 2
+      ) {
+        str = '您的预约时间快到了，请及时前往取号'
+      }
+
+      return str
+    },
+    cancelPay() {
+      this.getData(this.id, this.orderId)
+    },
+    compare(item) {
+      return (
+        new Date(`${item.visitDate.replace(/-/g, '/')} ${item.endTime}`) <
+        new Date()
+      )
+    },
     async getData(id = '', orderId = '') {
       this.info = await getUserDetail({ id, orderId })
+      // this.info = await orderDetail({ id, orderId })
     },
     openPay() {
-      this.$refs.pay.show(this.info.orderId)
+      this.info.orderId
+        ? this.$refs.pay.show(this.info.orderId)
+        : this.$refs.pay.show()
     },
     async orderPay() {
       const params = {
@@ -197,13 +270,19 @@ export default {
         bizType: 'RESERVE',
         agreement: true,
       }
-      const data = await submitAppointment(params)
+
+      let data = this.info
+      if (!data.orderId) {
+        //没有支付单id 需要先提交生成支付单
+        data = await submitAppointment(params)
+      }
       if (data.isPay) {
         uni.navigateBack({
           delta: 1,
         })
       } else {
-        this.$refs.pay.payTypeC(data.tradeId, data.tradeType)
+        // this.$refs.pay.payTypeC(data.tradeId, data.tradeType)
+        this.$refs.pay.payTypeC(data.orderId, 'ORDER')
       }
     },
     del() {
@@ -229,7 +308,9 @@ export default {
             })
             const ok = await verifyBack({ orderId: this.info.id })
             if (ok) {
-              refund({ orderId: this.info.orderId })
+              refund({
+                orderId: this.info.orderId,
+              })
                 .then(() => this.getData(this.info.id))
                 .finally(() => {
                   uni.hideLoading()
@@ -237,15 +318,31 @@ export default {
                 })
             } else {
               uni.hideLoading()
-              this.$tip('当前订单不能退费')
+              this.$tip('当日及之前的订单无法退费')
             }
           }
         },
       })
     },
     back() {
+      this.getData(this.id, this.orderId)
       uni.navigateBack({
         delta: 1,
+      })
+    },
+    // 核酸检测签到
+    async acidSignIn() {
+      uni.showModal({
+        content: '确认签到后将无法退款，请确认是否签到？',
+        success: async res => {
+          if (res.confirm) {
+            await acidSignIn({ id: this.id })
+            this.getData(this.id, this.orderId)
+            this.state = 3
+            this.$tip('签到成功！')
+            uni.$emit('SYNC_MY_RESERVE')
+          }
+        },
       })
     },
   },

@@ -15,7 +15,7 @@
 
 <script>
 // import uQRCode from '@/common/uqrcode.js';
-import bgimg from '@/assets/qrcodebg@2x.png';
+// import bgimg from '@/assets/qrcodebg@2x.png'; //图片体积优化
 export default {
   data() {
     return {
@@ -24,42 +24,24 @@ export default {
       widths: '', //图片列表动态宽度
       imgsrc: '', //保存图片的路径
       userdata: {}, //个人数据
-      iscode: true
-    };
+      iscode: true,
+    }
   },
   computed: {
     avatar: function() {
-      return this.FILE_URL(this.$store.state.avatar);
+      return this.FILE_URL(this.$store.state.avatar)
     },
     userInfo: function() {
-      return this.$store.state.userInfo;
-    }
+      return this.$store.state.userInfo
+    },
   },
   onReady() {
-    this.make();
+    this.make()
   },
   methods: {
     async make() {
-      // uQRCode.make({
-      //   canvasId: 'qrcode',
-      //   componentInstance: this,
-      //   text:  this.FILE_URL(this.$store.state.userInfo.qrCode),
-      //   size: 200,
-      //   margin: 10,
-      //   backgroundColor: '#ffffff',
-      //   foregroundColor: '#000000',
-      //   fileType: 'jpg',
-      //   correctLevel: uQRCode.defaults.correctLevel,
-      //   success: async res => {
-      //     console.log(res);
-      //     this.iscode = false;
-      //     let img = await this.getImg();
-      //     this.selseimg(res, img);
-      //   }
-      // });
-
-      const img = await this.getImg();
-      this.selseimg(this.FILE_URL(this.$store.state.userInfo.qrCode), img);
+      const img = await this.getImg()
+      this.selseimg(this.FILE_URL(this.$store.state.userInfo.qrCode), img)
     },
     getImg() {
       return new Promise((resolve, reject) => {
@@ -67,104 +49,116 @@ export default {
           url: this.avatar,
           success: res => {
             if (res.statusCode === 200) {
-              resolve(res.tempFilePath);
+              resolve(res.tempFilePath)
             } else {
-              new Error(res.errMsg);
-              reject(res.errMsg);
+              new Error(res.errMsg)
+              reject(res.errMsg)
             }
-          }
+          },
         })
-      });
+      })
     },
     base64src(base64data, name) {
-      const fsm = wx.getFileSystemManager();
+      const fsm = wx.getFileSystemManager()
       return new Promise((resolve, reject) => {
-        const [, format, bodyData] = /data:image\/(\w+);base64,(.*)/.exec(base64data) || [];
+        const [, format, bodyData] =
+          /data:image\/(\w+);base64,(.*)/.exec(base64data) || []
         if (!format) {
-          reject(new Error('ERROR_BASE64SRC_PARSE'));
+          reject(new Error('ERROR_BASE64SRC_PARSE'))
         }
-        const filePath = `${wx.env.USER_DATA_PATH}/${name}.${format}`;
-        const buffer = uni.base64ToArrayBuffer(bodyData);
+        const filePath = `${wx.env.USER_DATA_PATH}/${name}.${format}`
+        const buffer = uni.base64ToArrayBuffer(bodyData)
         fsm.writeFile({
           filePath,
           data: buffer,
           encoding: 'binary',
           success() {
-            resolve(filePath);
+            resolve(filePath)
           },
           fail() {
-            reject(new Error('ERROR_BASE64SRC_WRITE'));
+            reject(new Error('ERROR_BASE64SRC_WRITE'))
           },
-        });
-      });
+        })
+      })
     },
 
     async selseimg(e, img) {
       //绘制海报
-      let rpx;
+      let rpx
       //获取屏幕宽度，获取自适应单位
       uni.getSystemInfo({
         success: function(res) {
-          rpx = res.windowWidth / 375;
-        }
-      });
+          rpx = res.windowWidth / 375
+        },
+      })
 
-      let that = this;
+      let that = this
       uni.showLoading({
-        title: '生成海报中'
-      });
-      const bg = await this.base64src(bgimg, 'bg')
+        title: '生成海报中',
+      })
+      const bg = await this.base64src(
+        /* bgimg */ this.FILE_URL_BUILT_IN('qrcodebg@2x.png'),
+        'bg',
+      ) //图片体积优化
       // const header = await this.base64src(img, 'header')
-      const context = uni.createCanvasContext('firstCanvas');
-      context.drawImage(bg, -10 * rpx, 0, 374 * rpx, 530 * rpx); //海报背景
-      context.drawImage(e, 72.5 * rpx, 200 * rpx, 220 * rpx, 220 * rpx); //二维码图片
+      const context = uni.createCanvasContext('firstCanvas')
+      context.drawImage(bg, -10 * rpx, 0, 374 * rpx, 530 * rpx) //海报背景
+      context.drawImage(e, 72.5 * rpx, 200 * rpx, 220 * rpx, 220 * rpx) //二维码图片
 
-      context.setFillStyle('#fff');
-      context.setFontSize(20);
-      context.textAlign = 'center'; //文字居中
-      context.fillText(that.userInfo.username, 177.5 * rpx, 150 * rpx); //昵称
-      context.fill();
+      context.setFillStyle('#fff')
+      context.setFontSize(20)
+      context.textAlign = 'center' //文字居中
+      context.fillText(that.userInfo.username, 177.5 * rpx, 150 * rpx) //昵称
+      context.fill()
 
-      context.setFillStyle('#fff');
-      context.setFontSize(12);
-      context.textAlign = 'center'; //文字居中
-      context.fillText(that.userInfo.orgName + ' ' + that.userInfo.deptName + ' ' + that.userInfo.titleName, 177.5 *
-        rpx, 176 * rpx);
-      context.fill();
+      context.setFillStyle('#fff')
+      context.setFontSize(12)
+      context.textAlign = 'center' //文字居中
+      context.fillText(
+        that.userInfo.orgName +
+          ' ' +
+          that.userInfo.deptName +
+          ' ' +
+          that.userInfo.titleName,
+        177.5 * rpx,
+        176 * rpx,
+      )
+      context.fill()
 
       this.circleImg(context, img, 147 * rpx, 50 * rpx, 35 * rpx) //头像
-      context.restore();
-      context.draw();
+      context.restore()
+      context.draw()
 
-      uni.hideLoading();
+      uni.hideLoading()
     },
     // 调用剪切头像方式
     circleImg(ctx, img, x, y, r) {
       //圆形头像
-      ctx.save();
-      var d = 2 * r;
-      var cx = x + r;
-      var cy = y + r;
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, 2 * Math.PI);
-      ctx.clip();
-      ctx.drawImage(img, x, y, d, d);
+      ctx.save()
+      var d = 2 * r
+      var cx = x + r
+      var cy = y + r
+      ctx.beginPath()
+      ctx.arc(cx, cy, r, 0, 2 * Math.PI)
+      ctx.clip()
+      ctx.drawImage(img, x, y, d, d)
     },
     saveCans(e) {
-      let that = this;
+      let that = this
       //保存海报
       uni.showLoading({
-        title: '保存海报中'
-      });
+        title: '保存海报中',
+      })
 
-      console.log('保存');
-      let tempRatio = 1.5;
+      console.log('保存')
+      let tempRatio = 1.5
 
       // #ifdef H5 || APP-PLUS
-      tempRatio = 1;
+      tempRatio = 1
       // #endif
 
-      uni.canvasToTempFilePath({
+      uni.canvasToTempFilePath(
+        {
           x: 0,
           y: 0,
           width: that.cansWidth * tempRatio,
@@ -173,14 +167,14 @@ export default {
           destHeight: that.cansHeight * tempRatio * 2,
           canvasId: 'firstCanvas',
           success: function(res) {
-            uni.hideLoading();
+            uni.hideLoading()
             uni.saveImageToPhotosAlbum({
               filePath: res.tempFilePath,
               success: function(red) {
                 uni.showToast({
-                  title: '保存相册成功'
-                });
-                that.imgsrc = res.tempFilePath;
+                  title: '保存相册成功',
+                })
+                that.imgsrc = res.tempFilePath
               },
               fail(res) {
                 if (res.errMsg == 'saveImageToPhotosAlbum:fail auth deny') {
@@ -191,24 +185,24 @@ export default {
                         uni.openSetting({
                           success(res) {},
                           fail(res) {
-                            console.log(res);
-                          }
-                        });
+                            console.log(res)
+                          },
+                        })
                       }
-                    }
-                  });
+                    },
+                  })
                 }
-              }
-            });
+              },
+            })
           },
           fail(res) {
-            uni.hideLoading();
-          }
+            uni.hideLoading()
+          },
         },
-        this
-      );
-    }
-  }
+        this,
+      )
+    },
+  },
 }
 </script>
 

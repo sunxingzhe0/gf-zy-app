@@ -65,6 +65,7 @@ Vue.prototype.FORMATDATE = function(value, fmt) {
 }
 Vue.prototype.$tip = function(title) {
   uni.showToast({
+    uration: 2000,
     icon: 'none',
     title,
   })

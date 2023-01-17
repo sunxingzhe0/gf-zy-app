@@ -16,7 +16,7 @@
         info.doctorName
       }}</view>
       <view style="font-size: 28rpx;color: #fff;">{{ info.titleName }}</view>
-      <view class="text">正在邀请你进行视频复诊</view>
+      <view class="text">正在邀请你进行视频</view>
     </view>
     <view class="button-wrapper">
       <button class="btn btn-accept" @click="acceptVideo">接受</button>

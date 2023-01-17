@@ -183,6 +183,7 @@ export default {
   },
   data() {
     return {
+      isClick: true,
       current: 1,
       tabList: [
         {
@@ -259,7 +260,12 @@ export default {
         bizType: 'DISPOSAL',
         agreement: true,
       }
+      if (!this.isClick) {
+        return uni.showToast({ title: '请勿重复点击', icon: 'none' })
+      }
+      this.isClick = false
       const data = await submitAppointment(params)
+      this.isClick = true
       if (data) {
         if (data.tradeId && data.tradeType) {
           this.$refs.pay.payTypeC(data.tradeId, data.tradeType)

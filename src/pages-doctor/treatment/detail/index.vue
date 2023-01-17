@@ -4,6 +4,9 @@
     <view
       class="treatment-status"
       :class="{ active: info.payStatus == 'PAID' }"
+      :style="{
+        backgroundImage: `url(${FILE_URL_BUILT_IN('treatment-bg.png')})`,
+      }"
     >
       {{
         info.status == 'DRAFT'
@@ -87,7 +90,7 @@ export default {
   line-height: 110rpx;
   background-size: cover;
   background-color: #cccccc;
-  background-image: url(@/assets/treatment-bg.png);
+  // background-image: url(@/assets/treatment-bg.png);/* 图片体积优化 */
   &.active {
     background-color: #0ab2c1;
   }

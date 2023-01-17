@@ -5,24 +5,46 @@
     <!--主页按钮-->
     <homeIcom />
     <view class="orderWrap ">
-      <view class="oerderMain  box-shadow" style="overflow: hidden; position: relative;">
+      <view
+        class="oerderMain  box-shadow"
+        style="overflow: hidden; position: relative;"
+      >
         <view class="orderItem flex-between">
-          <view class="title">{{ infoData.medicalType == 'MZ' ? '门诊记录' : infoData.medicalType == 'ZY' ? '住院记录' : '体检报告' }}</view>
-          <view class="info" style="padding-right: 20rpx;word-wrap: break-word;">唯一ID：{{ infoData.id }}</view>
+          <view class="title">{{
+            infoData.medicalType == 'MZ'
+              ? '门诊号'
+              : infoData.medicalType == 'ZY'
+              ? '住院记录'
+              : '体检报告'
+          }}</view>
+          <view
+            class="info"
+            style="padding-right: 20rpx;word-wrap: break-word;"
+            >{{ infoData.visitNo || infoData.id }}</view
+          >
         </view>
         <view class="orderItem flex-between">
           <view class="title">接诊医生</view>
-          <view class="info">{{ infoData.deptName || ''}} {{ infoData.doctorName || ''}} {{ infoData.title || ''}}</view>
+          <view class="info"
+            >{{ infoData.deptName || '' }} {{ infoData.doctorName || '' }}
+            {{ infoData.title || '' }}</view
+          >
         </view>
 
         <view class="orderItem flex-between">
           <view class="title">接诊时间</view>
-          <view class="info">{{ infoData.createTime || '-'}}</view>
+          <view class="info">{{ infoData.createTime || '-' }}</view>
         </view>
-        <view class="list_e" v-if="infoData.type == 'outer'"><text>互联网</text></view>
+        <view class="list_e" v-if="infoData.type == 'outer'"
+          ><text>互联网</text></view
+        >
       </view>
       <view class="oerderMain  box-shadow">
-        <view class="orderItem flex-between" style="border: 0;padding-bottom: 20rpx;"><view class="title">患者信息</view></view>
+        <view
+          class="orderItem flex-between"
+          style="border: 0;padding-bottom: 20rpx;"
+          ><view class="title">患者信息</view></view
+        >
         <view class="flex-between" style="padding-right: 30rpx;">
           <view class="font26 color666">
             就诊人：
@@ -39,9 +61,17 @@
         </view>
         <view class="orderItem" style="padding-top: 20rpx;">
           <view class="font26 color666">病情自述：</view>
-          <view class="font26 colora1a1">{{ infoData.illnessDesc || '-'}}</view>
+          <view class="font26 colora1a1">{{
+            infoData.illnessDesc || infoData.illnessInfo || '-'
+          }}</view>
           <view class="imgList flex-between">
-            <image class="imgItem" v-for="(item, index) in infoData.pic" :key="index" @click="imgPreview(index)" :src="FILE_URL(item)"></image>
+            <image
+              class="imgItem"
+              v-for="(item, index) in infoData.pic"
+              :key="index"
+              @click="imgPreview(index)"
+              :src="FILE_URL(item)"
+            ></image>
             <view class="imgItem" style="height: 0;"></view>
             <view class="imgItem" style="height: 0;"></view>
           </view>
@@ -50,81 +80,161 @@
       <view class="oerderMain  box-shadow">
         <view class="orderItem">
           <view class="title">诊断</view>
-          <view class="font26 colora1a1" style="margin-top: 20rpx;">{{ infoData.diagnose || '' }}</view>
+          <view class="font26 colora1a1" style="margin-top: 20rpx;">{{
+            infoData.medicalRecord.diagDesc || '-'
+          }}</view>
         </view>
         <view class="orderItem">
           <view class="flex-between">
             <view class="title">患者病历</view>
             <view class="more" @click="isrecipelhis = !isrecipelhis">
               {{ !isrecipelhis ? '展开' : '收起' }}
-              <text :class="['iconfont', !isrecipelhis ? 'icon-zhankai' : 'icon-expand-down']"></text>
+              <text
+                :class="[
+                  'iconfont',
+                  !isrecipelhis ? 'icon-zhankai' : 'icon-expand-down',
+                ]"
+              ></text>
             </view>
           </view>
           <view class="" v-show="isrecipelhis">
             <view style="margin-top: 20rpx;">
-              <view class="flex-start-center orderItem border0">
+              <!--  <view class="flex-start-center orderItem border0">
                 <view class="title font26">病历编号</view>
-                <view class="info font26">{{ infoData.medicalRecord.medicalNo || '-'}}</view>
-              </view>
+                <view class="info font26">{{
+                  infoData.medicalRecord.medicalNo || '-'
+                }}</view>
+              </view> -->
               <view class="flex-start-center orderItem border0">
                 <view class="title font26">就诊人</view>
                 <view class="info font26">{{ infoData.patientName }}</view>
               </view>
-              <view class="flex-start-center orderItem border0">
+              <!--   <view class="flex-start-center orderItem border0">
                 <view class="title font26">诊疗类型</view>
-                <view class="info font26">{{ infoData.medicalRecord.medicalType || '-'}}</view>
-              </view>
+                <view class="info font26">{{
+                  infoData.medicalRecord.medicalType || '-'
+                }}</view>
+              </view> -->
               <view class="flex-start-center orderItem border0">
                 <view class="title font26">就诊时间</view>
-                <view class="info font26">{{ infoData.medicalRecord.visitTime || '-'}}</view>
+                <view class="info font26">{{
+                  infoData.medicalRecord.visitTime || infoData.visitDate || '-'
+                }}</view>
               </view>
             </view>
-            <view>
+            <!-- 病历更改前 -->
+            <!-- <view>
               <view class="font26 colora1a1">主诉：</view>
-              <view class="font26 color666 mt10">{{ infoData.medicalRecord.chiefComplaint || '' }}</view>
+              <view class="font26 color666 mt10">{{
+                infoData.medicalRecord.chiefComplaint || '-'
+              }}</view>
             </view>
             <view>
               <view class="font26 colora1a1">现病史：</view>
-              <view class="font26 color666 mt10">{{ infoData.medicalRecord.currentDisease || '' }}</view>
+              <view class="font26 color666 mt10">{{
+                infoData.medicalRecord.currentDisease || '-'
+              }}</view>
             </view>
             <view>
               <view class="font26 colora1a1">既往史：</view>
-              <view class="font26 color666 mt10">{{ infoData.medicalRecord.historyDisease || '' }}</view>
+              <view class="font26 color666 mt10">{{
+                infoData.medicalRecord.historyDisease || '-'
+              }}</view>
             </view>
             <view>
               <view class="font26 colora1a1">体格检查：</view>
-              <view class="font26 color666 mt10">{{ infoData.medicalRecord.checkupExam || '' }}</view>
+              <view class="font26 color666 mt10">{{
+                infoData.medicalRecord.checkupExam || '-'
+              }}</view>
             </view>
             <view>
               <view class="font26 colora1a1">辅助检查：</view>
-              <view class="font26 color666 mt10">{{ infoData.medicalRecord.auxiliaryExam || '' }}</view>
+              <view class="font26 color666 mt10">{{
+                infoData.medicalRecord.auxiliaryExam || '-'
+              }}</view>
             </view>
             <view>
               <view class="font26 colora1a1">诊断：</view>
-              <view class="font26 color666 mt10">{{ infoData.medicalRecord.diagDesc || '' }}</view>
+              <view class="font26 color666 mt10">{{
+                infoData.medicalRecord.diagDesc || '-'
+              }}</view>
             </view>
             <view>
               <view class="font26 colora1a1">处理意见：</view>
-              <view class="font26 color666 mt10">{{ infoData.medicalRecord.advice || '' }}</view>
+              <view class="font26 color666 mt10">{{
+                infoData.medicalRecord.advice || '-'
+              }}</view>
+            </view> -->
+            <!-- 病历更改后 -->
+            <view>
+              <view class="font26 colora1a1">就诊方式：</view>
+              <view class="font26 color666 mt10">{{
+                infoData.medicalRecord.seeWay || '-'
+              }}</view>
+            </view>
+            <view>
+              <view class="font26 colora1a1">病情：</view>
+              <view class="font26 color666 mt10">{{
+                infoData.medicalRecord.illness || '-'
+              }}</view>
+            </view>
+            <view>
+              <view class="font26 colora1a1">辅助检查：</view>
+              <view class="font26 color666 mt10">{{
+                infoData.medicalRecord.supCheck || '-'
+              }}</view>
+            </view>
+            <view>
+              <view class="font26 colora1a1">初次诊断：</view>
+              <view class="font26 color666 mt10">{{
+                infoData.medicalRecord.diagnosis || '-'
+              }}</view>
+            </view>
+            <view>
+              <view class="font26 colora1a1">处理意见：</view>
+              <view class="font26 color666 mt10">{{
+                infoData.medicalRecord.advice || '-'
+              }}</view>
             </view>
           </view>
         </view>
-
-        <view class="orderItem flex-between">
+        <!-- 暂时隐藏医嘱记录 2021 12 07-->
+        <view class="orderItem flex-between" v-if="false">
           <view class="title">医嘱记录</view>
           <view class="more" @click="isOpen = !isOpen">
             {{ !isOpen ? '展开' : '收起' }}
-            <text :class="['iconfont', !isOpen ? 'icon-zhankai' : 'icon-expand-down']"></text>
+            <text
+              :class="[
+                'iconfont',
+                !isOpen ? 'icon-zhankai' : 'icon-expand-down',
+              ]"
+            ></text>
           </view>
         </view>
         <view v-show="isOpen">
           <view class="orderItem">
             <view class="font26 colora1a1">处方记录：</view>
-            <view v-for="(f, i) in infoData.rpList" :key="i" style="margin-top: 20rpx;">
+            <view
+              v-for="(f, i) in infoData.rpList"
+              :key="i"
+              style="margin-top: 20rpx;"
+            >
               <view class="prescription flex-between">
-                <view class="prescriptionTitle">处方号：{{ f.id }}</view>
+                <view class="prescriptionTitle"
+                  >处方号：{{ f.id || f.rpNo || '' }}</view
+                >
                 <view class="state default">
-                  {{ f.status == 'DRAFT' ? '草稿' : f.status == 'PENDING_REVIEW' ? '待审核' : f.status == 'REJECTED' ? '已驳回' : f.status == 'REJECTED' ? '已通过' : '' }}
+                  {{
+                    f.status == 'DRAFT'
+                      ? '草稿'
+                      : f.status == 'PENDING_REVIEW'
+                      ? '待审核'
+                      : f.status == 'REJECTED'
+                      ? '已驳回'
+                      : f.status == 'REJECTED'
+                      ? '已通过'
+                      : ''
+                  }}
                 </view>
               </view>
               <view class="">
@@ -148,28 +258,62 @@
                 </view>
               </view>
               <view class="flex-between">
-                <view class="">西药:￥{{ f.westFee }}</view>
-                <view class="">中成药:￥{{ f.chPatentFee }}</view>
+                <view v-for="d in drugCount(f.contentList)" :key="d.key"
+                  >{{ d.key ? d.key + ':' : '' }}￥{{ d.value }}</view
+                >
                 <view class="font-weight pricolor">合计:￥{{ f.rpFee }}</view>
               </view>
               <view class="flex-between" style="margin-top: 30rpx;">
-                <view class="font24">数量：{{ f.drugNumber }}</view>
-                <view class="more" style="font-size: 24rpx;" @click="isrecipel = !isrecipel">
-                  {{ !isrecipel ? '查看' : '收起' }}处方
-                  <text :class="['iconfont', !isrecipel ? 'icon-zhankai' : 'icon-expand-down']"></text>
+                <view class="font24"
+                  >数量：{{ f.contentList.length || f.drugNumber }}</view
+                >
+                <view
+                  class="more"
+                  style="font-size: 24rpx;"
+                  @click="isShowPre(f)"
+                >
+                  {{ !f.isrecipel ? '查看' : '收起' }}处方
+                  <text
+                    :class="[
+                      'iconfont',
+                      !f.isrecipel ? 'icon-zhankai' : 'icon-expand-down',
+                    ]"
+                  ></text>
                 </view>
               </view>
-              <view v-show="isrecipel">
-                <view class="recipelInfo" v-for="(item, index) in f.contentList" :key="index">
+              <view v-show="f.isrecipel">
+                <view
+                  class="recipelInfo"
+                  v-for="(item, index) in f.contentList"
+                  :key="index"
+                >
                   <view class="recipelItem">
                     <view class="flex-between">
-                      <view class="font26">{{ index + 1 }}.{{ item.name }}（规格：{{ item.spec }}）</view>
-                      <view class="font26 color666">医保：{{ swithMedicare(item.medicare) }}</view>
+                      <view class="font26"
+                        >{{ index + 1 }}.{{ item.name }}（规格：{{
+                          item.spec
+                        }}）</view
+                      >
+                      <view class="font26 color666"
+                        >医保：{{ swithMedicare(item.medicare) || '-' }}</view
+                      >
                     </view>
                     <view class="color666 font26 paddingLeft16">
-                      {{ item.useWays }} {{ item.useFrequency }} {{ item.singleDose }}/{{ item.singleDoseUnitText }} ￥{{ item.price }}/{{ item.totalUnitText }}x{{ item.total }}
+                      {{ item.useWaysText || '' }}
+                      {{ item.useFrequencyText || '' }}
+                      {{ item.singleDose
+                      }}{{
+                        item.singleDoseUnitText
+                          ? item.singleDoseUnitText + '/次'
+                          : ''
+                      }}
+                      ￥{{ item.price }}/{{ item.totalUnitText }}x{{
+                        item.total
+                      }}
                     </view>
-                    <view class="font24 color666 paddingLeft16">备注：{{ item.remark }}</view>
+                    <view class="font24 color666 paddingLeft16"
+                      >备注：{{ item.remark }}</view
+                    >
                   </view>
                 </view>
               </view>
@@ -182,68 +326,87 @@
 </template>
 
 <script>
-import util from '@/common/util.js';
-import { medicalDetail } from '@/common/request/userCenter';
+import { medicalDetail } from '@/common/request/userCenter'
 export default {
   data() {
     return {
       isOpen: false,
-      isrecipel: false,
+      // isrecipel: false,
       isrecipelhis: false,
       isOrdermore: false,
       index: 0,
       infoData: {},
-      medicalId: ''
-    };
+      medicalId: '',
+    }
   },
   onLoad: function(options) {
     if (options.id) {
-      this.medicalId = options.id;
-      this.getmedicalDetail();
+      this.medicalId = options.id
+      this.getmedicalDetail()
     }
   },
   methods: {
+    isShowPre(row) {
+      this.$set(row, 'isrecipel', !row.isrecipel)
+    },
     // 预览图片
     imgPreview(index) {
       let list = this.infoData.pic.map(item => {
-        return this.FILE_URL(item);
-      });
+        return this.FILE_URL(item)
+      })
       uni.previewImage({
         current: list[index],
-        urls: list
-      });
+        urls: list,
+      })
     },
     // 获取详情
     async getmedicalDetail() {
       this.infoData = await medicalDetail({
-        medicalId: this.medicalId
-      });
+        medicalId: this.medicalId,
+      })
     },
     gotoInfo(url) {
       uni.navigateTo({
-        url
-      });
+        url,
+      })
     },
     swithMedicare(medicare) {
-      var str = '';
+      var str = ''
       switch (medicare) {
         case 'A':
-          str = '甲类';
-          break;
+          str = '甲类'
+          break
         case 'B':
-          str = '乙类';
-          break;
+          str = '乙类'
+          break
         case 'C':
-          str = '丙类';
-          break;
+          str = '丙类'
+          break
         case 'ME_FEE':
-          str = '自费';
-          break;
+          str = '自费'
+          break
       }
-      return str;
-    }
-  }
-};
+      return str
+    },
+    drugCount(list) {
+      console.log(list)
+      const res = []
+      new Set(list.map(item => item.typeText)).forEach(item =>
+        res.push({
+          key: item,
+          value: list
+            .filter(ite => ite.typeText == item)
+            .map(ite => Number(ite.totalPrice))
+            .reduce((num, sum) => {
+              return num + sum
+            }, 0),
+        }),
+      )
+      console.log(res)
+      return res
+    },
+  },
+}
 </script>
 
 <style lang="scss" scoped>

@@ -100,7 +100,9 @@ export default {
       // 改变单击项
       this.handleChange(e)
 
-      const re = this.multi ? this.items.filter(item => item.checked).map(item => item.value) : []
+      const re = this.multi
+        ? this.items.filter(item => item.checked).map(item => item.value)
+        : []
       const r = this.items.find(val => val.value === e)
       const result = this.multi ? re : r.checked ? e : null
       // 返回选择项
@@ -113,16 +115,20 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss" scoped>
 .radioWrap {
   display: flex;
   flex-wrap: wrap;
   width: 590rpx;
+  justify-content: space-between;
 }
 .radioWrap:after {
   content: '';
   width: 173rpx;
   height: 60rpx;
   display: block;
+}
+filter-radio-item {
+  width: 33.33%;
 }
 </style>

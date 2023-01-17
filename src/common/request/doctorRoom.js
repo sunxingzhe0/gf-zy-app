@@ -4,14 +4,16 @@ import request from './request'
  * bizType {String} 业务类型(CONSULT:在线咨询,REPEAT_CLINIC:在线复诊,CARRYON_PRESC:慢病续方)
  * doctorId {String} 医生id
  */
-export const findBizTypeState = params => request('/api/v1/bizConfig/findBizTypeState', params, 'GET');
+export const findBizTypeState = params =>
+  request('/api/v1/bizConfig/findBizTypeState', params, 'GET')
 
 /**
  * bizType {String} 业务类型(CONSULT:在线咨询,REPEAT_CLINIC:在线复诊,CARRYON_PRESC:慢病续方)
  * doctorId {String} 医生id
  * state {Number} 业务类型状态标识(0:离线/1:在线)
  */
-export const updateBizTypeState = params => request('/api/v1/bizConfig/updateBizTypeState', params, 'GET');
+export const updateBizTypeState = params =>
+  request('/api/v1/bizConfig/updateBizTypeState', params, 'GET')
 
 /**
  * tab {String} CONSULT : 在线咨询；REPEAT_CLINIC : 在线复诊；CARRYON_PRESC : 慢病续方
@@ -24,7 +26,8 @@ export const updateBizTypeState = params => request('/api/v1/bizConfig/updateBiz
  * field {String}  create_time
  * sorted {String}  desc / asc
  */
-export const doctorSessionData = params => request('/api/v1/im/doctorSessionData', params, 'GET');
+export const doctorSessionData = params =>
+  request('/api/v1/im/doctorSessionData', params, 'GET')
 
 /**
  * 4.5.1.1健康档案列表页
@@ -39,75 +42,101 @@ export const doctorSessionData = params => request('/api/v1/im/doctorSessionData
   field	string	排序字段
   sorted	string	排序规则：desc/asc
  */
-export const archives = params => request('/api/v1/archive/list', params, 'GET');
+export const archives = params => request('/api/v1/archive/list', params, 'GET')
 
 /**
  * 5.2.3.4.接诊
  * orderId	string	订单ID
  */
-export const receiving = params => request('/api/v1/clinic/doctor/receiving', params, 'GET');
+export const receiving = params =>
+  request('/api/v1/clinic/doctor/receiving', params, 'GET')
 
 /**
  * 5.1.8.结束服务
  * orderId	string	订单ID
  */
-export const over = params => request('/api/v1/clinic/doctor/over', params, 'GET');
+export const over = params =>
+  request('/api/v1/clinic/doctor/over', params, 'GET')
+/**
+ * 5.1.8.终止服务
+ * orderId	string	订单ID
+ */
+export const chatStop = params =>
+  request('/api/v1/clinic/doctor/stop', params, 'GET')
+
+/**
+ * 5.1.8.取消问诊
+ * orderId	string	订单ID
+ */
+export const usersTopChat = params =>
+  request('/api/v1/clinic/user/stop', params, 'GET')
 
 /**
  * 6.1.1.1.3.WEB/APP医生端聊天界面病情描述
  * @param {String} orderId 订单ID
  */
-export const orderIllness = params => request('/api/v1/order/illness', params, 'GET')
+export const orderIllness = params =>
+  request('/api/v1/order/illness', params, 'GET')
 
 /**
  * 6.4.8.3.3.常用语列表显示
  */
-export const findCommonWords = params => request('/api/v1/phrase/findTemplateData', params, 'GET')
+export const findCommonWords = params =>
+  request('/api/v1/phrase/findTemplateData', params, 'GET')
 
 /**
  * 6.4.8.3.1.添加常用语
  */
-export const addCommonWords = data => request('/api/v1/phrase/addTemplate', data, 'POST')
+export const addCommonWords = data =>
+  request('/api/v1/phrase/addTemplate', data, 'POST')
 
 /**
  * 6.4.8.3.2.编辑常用语
  */
-export const editCommonWords = data => request('/api/v1/phrase/editTemplate', data, 'POST')
+export const editCommonWords = data =>
+  request('/api/v1/phrase/editTemplate', data, 'POST')
 
 /**
  * 6.4.8.3.2.编辑常用语
  */
-export const delCommonWords = params => request('/api/v1/phrase/delTemplate', params, 'GET')
+export const delCommonWords = params =>
+  request('/api/v1/phrase/delTemplate', params, 'GET')
 
 /**
  * 3.14.1.医生移动端诊室会话列表NAV统计值
  */
-export const doctorSessionNavCount = params => request('/api/v1/im/doctorSessionNavCount', params, 'GET')
+export const doctorSessionNavCount = params =>
+  request('/api/v1/im/doctorSessionNavCount', params, 'GET')
 
 /**
  * 5.1.9.医生申请查看就诊记录
  */
-export const applyAuth = data => request('/api/v1/archive/applyAuth', data, 'POST')
+export const applyAuth = data =>
+  request('/api/v1/archive/applyAuth', data, 'POST')
 
 /**
  * 4.5.1.2.就诊记录详情
  */
-export const medicalDetail = params => request('/api/v1/archive/medicalDetail', params, 'GET')
+export const medicalDetail = params =>
+  request('/api/v1/archive/medicalDetail', params, 'GET')
 
 /**
  * 5.1.3诊室中查询诊断信息
  */
-export const findDiagnosisInClinic = params => request('/api/v1/diagnosis/findDiagnosisInClinic', params, 'GET')
+export const findDiagnosisInClinic = params =>
+  request('/api/v1/diagnosis/findDiagnosisInClinic', params, 'GET')
 
 /**
  * 根据诊断id查询诊断
  */
-export const findDiagByDiagId = params => request('/api/v1/diagnosis/findDiagByDiagId', params, 'GET')
+export const findDiagByDiagId = params =>
+  request('/api/v1/diagnosis/findDiagByDiagId', params, 'GET')
 /**
  * 保存临时诊断
  * @param {findDiagnosisInClinicResponse} data
  */
-export const saveTemporaryDiag = (params,data) => request('/api/v1/diagnosis/saveTemporaryDiag', params, 'POST','json',data)
+export const saveTemporaryDiag = (params, data) =>
+  request('/api/v1/diagnosis/saveTemporaryDiag', params, 'POST', 'json', data)
 
 /**
  * @typedef {object} childDtos
@@ -130,7 +159,8 @@ export const saveTemporaryDiag = (params,data) => request('/api/v1/diagnosis/sav
  * @param {childDtos[]} data.childDtos
  * @returns {Promise<string>} 返回诊断id
  */
-export const submitDiagnosis = (params,data) => request('/api/v1/diagnosis/submitDiagnosis', params, 'POST','json',data)
+export const submitDiagnosis = (params, data) =>
+  request('/api/v1/diagnosis/submitDiagnosis', params, 'POST', 'json', data)
 
 /**
  * @typedef {object} childDtos
@@ -177,8 +207,8 @@ export const submitDiagnosis = (params,data) => request('/api/v1/diagnosis/submi
  * @param {number} [params.pageSize] - 每页显示内容数
  * @returns {Promise<importDiagTempResponse>}
  */
-export const importDiagTemp = params => request('/api/v1/diagnosis/importDiagTemp', params, 'GET')
-
+export const importDiagTemp = params =>
+  request('/api/v1/diagnosis/importDiagTemp', params, 'GET')
 
 /**
  * 诊断名关键字查询
@@ -188,8 +218,8 @@ export const importDiagTemp = params => request('/api/v1/diagnosis/importDiagTem
  * @param {number} params.pageSize - 分页页数
  * @returns {Promise<import('./index').ListBase & { list: {}[] }>}
  */
-export const diagnosisKeywordSearch = params => request('/api/v1/diagnosis/keywordSearch', params, 'GET')
-
+export const diagnosisKeywordSearch = params =>
+  request('/api/v1/diagnosis/keywordSearch', params, 'GET')
 
 /**
  * @typedef {object} findDiseaseInClinicResponse
@@ -209,14 +239,15 @@ export const diagnosisKeywordSearch = params => request('/api/v1/diagnosis/keywo
  * @param {string} params.orderId - 订单id
  * @returns {Promise<findDiseaseInClinicResponse>}
  */
-export const findDiseaseInClinic = params => request('/api/v1/etcDisease/findDiseaseInClinic', params, 'GET')
-
+export const findDiseaseInClinic = params =>
+  request('/api/v1/etcDisease/findDiseaseInClinic', params, 'GET')
 
 /**
  * 导入病历模板列表
  * @returns {Promise<{ dtoList: {}[], mainList: {}[], nowList: {}[], phyList: {}[], supList: {}[], dealList: {}[] }>}
  */
-export const importDiseaseTemp = params => request('/api/v1/etcDisease/importDiseaseTemp', params, 'GET')
+export const importDiseaseTemp = params =>
+  request('/api/v1/etcDisease/importDiseaseTemp', params, 'GET')
 
 /**
  * 保存临时病历
@@ -229,7 +260,8 @@ export const importDiseaseTemp = params => request('/api/v1/etcDisease/importDis
  * @param {string} [data.dealIdea] - 处理意见
  * @param {string} [data.diagnosis] - 诊断
  */
-export const saveDiseaseTemp = params => request('/api/v1/etcDisease/saveDiseaseTemp', params, 'POST')
+export const saveDiseaseTemp = params =>
+  request('/api/v1/etcDisease/saveDiseaseTemp', params, 'POST')
 
 /**
  * 提交病历
@@ -246,10 +278,12 @@ export const saveDiseaseTemp = params => request('/api/v1/etcDisease/saveDisease
  * @param {string} data.diagnosis - 诊断
  * @returns {Promise<string>} 病历编号
  */
-export const submitDisease = params => request('/api/v1/etcDisease/submitDisease', params, 'POST')
+export const submitDisease = params =>
+  request('/api/v1/etcDisease/submitDisease', params, 'POST')
 
 // 添加病历修改记录
-export const addChangeRecord = params => request('/api/v1/etcDisease/addChangeRecord', params, 'GET')
+export const addChangeRecord = params =>
+  request('/api/v1/etcDisease/addChangeRecord', params, 'GET')
 
 /**
  * 电子病历提交记录|修改记录
@@ -258,9 +292,18 @@ export const addChangeRecord = params => request('/api/v1/etcDisease/addChangeRe
  * @param {string} data.currentNum - 当前页
  * @param {string} data.pageSize - 每页内容数
  */
-export const findSubjectRecord = params => request('/api/v1/etcDisease/findSubjectRecord', params, 'GET')
+export const findSubjectRecord = params =>
+  request('/api/v1/etcDisease/findSubjectRecord', params, 'GET')
 
 // 电子病历模板
-export const findDiseaseTemplateList = params => request('/api/v1/etcDisease/findDiseaseTemplateList', params, 'POST')
+export const findDiseaseTemplateList = params =>
+  request('/api/v1/etcDisease/findDiseaseTemplateList', params, 'POST')
 // 查询病历模板信息
-export const backDiseaseTempInfo = params => request('/api/v1/etcDisease/backDiseaseTempInfo', params, 'GET')
+export const backDiseaseTempInfo = params =>
+  request('/api/v1/etcDisease/backDiseaseTempInfo', params, 'GET')
+
+/**
+ * 同步病历 orderId
+ */
+export const oneSyncHisDisease = data =>
+  request(`/api/v1/etcDisease/oneSyncHisDisease/${data.orderId}`, data, 'POST')

@@ -1,28 +1,62 @@
 <template>
   <view class="userWrap">
     <view class="headerTop">
-      <image class="bg" :src="FILE_URL_BUILT_IN('headerBg.png')" mode="scaleToFill"></image>
+      <image
+        class="bg"
+        :src="FILE_URL_BUILT_IN('headerBg.png')"
+        mode="scaleToFill"
+      ></image>
       <view class="headerMain">
-        <view class="flex-start-start" @click="!isDrugDoc ? goto('/pages-doctor/user/account') : ''">
-          <image :src="avatar ? FILE_URL(avatar) : require('@/assets/user/user_d_head.png')"></image>
+        <view
+          class="flex-start-start"
+          @click="!isDrugDoc ? goto('/pages-doctor/user/account') : ''"
+        >
+          <image
+            :src="
+              avatar
+                ? FILE_URL(avatar)
+                : require('@/assets/user/user_d_head.png')
+            "
+          ></image>
           <view class="headerInfo flex_1">
             <view class="flex-start-center">
               <view class="name">{{ userInfo.username }}</view>
-              <view class="attestation" :class="!userInfo.hasAuth ? 'red-font' : ''">{{ userInfo.hasAuth ? '已实名' : '未实名' }}</view>
-              <view class="attestation" :class="userInfo.examineState != 'SUCCESS' ? 'red-font' : ''">{{ authMap[userInfo.examineState] }}</view>
+              <view
+                class="attestation"
+                :class="!userInfo.hasAuth ? 'red-font' : ''"
+                >{{ userInfo.hasAuth ? '已实名' : '未实名' }}</view
+              >
+              <view
+                class="attestation"
+                :class="userInfo.examineState != 'SUCCESS' ? 'red-font' : ''"
+                >{{ authMap[userInfo.examineState] }}</view
+              >
             </view>
-            <view class="from">{{ userInfo.titleName }} {{ userInfo.orgName }} {{ userInfo.deptName }}</view>
+            <view class="from"
+              >{{ userInfo.titleName }} {{ userInfo.orgName }}
+              {{ userInfo.deptName || '' }}</view
+            >
             <view class="phone flex-between" style="margin-top: 10rpx;">
               <view>{{ util.noPassByMobile(userInfo.phone) }}</view>
               <view class="changerole" @click.stop="changeRole">
-                <uni-icons type="loop" color="#0AB2C1" style="margin-top: 6rpx;margin-right: 17rpx;font-weight: bold;" :size="16"></uni-icons>
+                <uni-icons
+                  type="loop"
+                  color="#0AB2C1"
+                  style="margin-top: 6rpx;margin-right: 17rpx;font-weight: bold;"
+                  :size="16"
+                ></uni-icons>
                 {{ userInfo.roleName }}
               </view>
               <!-- <view v-else>{{ userInfo.roleName }}</view> -->
             </view>
           </view>
         </view>
-        <view class="notice" @click="toQrcode" v-if="!isDrugDoc"><image :src="require('@/assets/user/erweima.png')"></image></view>
+        <!-- <view class="notice" @click="toQrcode" v-if="!isDrugDoc">
+          <image :src="require('@/assets/user/erweima.png')"></image>
+        </view> -->
+        <view class="notice" @click="scanning">
+          <image :src="require('@/assets/user/scanning.png')"></image>
+        </view>
       </view>
     </view>
     <view class="pageWrap" v-if="!isDrugDoc">
@@ -59,34 +93,88 @@
       <view class="box-shadow pageItem function">
         <view class="flex-between">
           <view class="title">已开通业务</view>
-          <view class="functionText flex_1" @click="isOpen = !isOpen">{{ bizTypeName }}</view>
-          <text :class="['iconfont', isOpen ? 'icon-expand-down' : 'icon-zhankai']" @click="isOpen = !isOpen"></text>
+          <view class="functionText flex_1" @click="isOpen = !isOpen">{{
+            bizTypeName
+          }}</view>
+          <text
+            :class="['iconfont', isOpen ? 'icon-expand-down' : 'icon-zhankai']"
+            @click="isOpen = !isOpen"
+          ></text>
         </view>
         <view v-show="isOpen">
-          <view :class="['functionList', 'flex-between', item.totalState == 1 ? '' : 'disabled']" v-for="(item, index) in bizList" :key="index">
+          <view
+            :class="[
+              'functionList',
+              'flex-between',
+              item.totalState == 1 ? '' : 'disabled',
+              item.bizType !== 'CONSULT' && item.bizType !== 'REPEAT_CLINIC'
+                ? 'nowDisabled'
+                : '',
+            ]"
+            v-for="(item, index) in bizList"
+            :key="index"
+          >
             <view class="functionName">
               <view>
-                <text>{{ item.bizType == 'CONSULT' ? '在线\n咨询' : item.bizType == 'REPEAT_CLINIC' ? '在线\n复诊' : '慢病\n续方' }}</text>
-                <switch class="switchAll" style="transform:scale(0.5);margin-left: -26rpx;" :checked="!!item.totalState" @change="bizTypeChange($event, item)" color="#0AB2C1" />
+                <text>{{
+                  item.bizType == 'CONSULT'
+                    ? '在线\n咨询'
+                    : item.bizType == 'REPEAT_CLINIC'
+                    ? '在线\n复诊'
+                    : item.bizType == 'REPORT_READ'
+                    ? '报告\n解读'
+                    : '慢病\n续方'
+                }}</text>
+                <switch
+                  class="switchAll"
+                  style="transform:scale(0.5);margin-left: -26rpx;"
+                  :checked="!!item.totalState"
+                  @change="bizTypeChange($event, item)"
+                  color="#0AB2C1"
+                  :disabled="
+                    item.bizType !== 'CONSULT' &&
+                      item.bizType !== 'REPEAT_CLINIC'
+                  "
+                />
               </view>
             </view>
             <view class="functionMain flex_1">
-              <view class="Item flex-between" v-for="(f, i) in item.bizWayList" :key="i">
+              <view
+                class="Item flex-between"
+                v-for="(f, i) in item.bizWayList"
+                :key="i"
+              >
                 <template>
                   <view class="flex-start-center">
-                    <view class="name">{{ f.bizWay == 'GRAPHIC' ? '图文' : f.bizWay == 'VIDEO' ? '视频' : '电话' }}</view>
-                    <view :class="['num', f.bizWay == 'VIDEO' ? 'disabled' : '']">
-                      <uni-number-box :disabled="f.bizWay == 'VIDEO'" :min="0" @change="numChange($event, item, f)" :value="f.peopleNum"></uni-number-box>
+                    <view class="name">{{
+                      f.bizWay == 'GRAPHIC'
+                        ? '图文'
+                        : f.bizWay == 'VIDEO'
+                        ? '视频'
+                        : '电话'
+                    }}</view>
+                    <view
+                      :class="['num', f.bizWay == 'VIDEO' ? 'disabled' : '']"
+                    >
+                      <uni-number-box
+                        :disabled="
+                          f.bizWay == 'VIDEO' || item.bizType !== 'CONSULT'
+                        "
+                        :min="0"
+                        @change="numChange($event, item, f)"
+                        :value="f.peopleNum"
+                      ></uni-number-box>
                     </view>
                   </view>
                   <view class="switch">
                     <switch
-                      v-if="f.bizWay != 'VIDEO'"
-                      :disabled="item.totalState == 0"
+                      v-show="item.totalState"
                       :checked="f.state == 1 ? true : false"
                       @change="bizWayChange($event, item, f)"
                       color="#0AB2C1"
+                      :disabled="item.bizType !== 'CONSULT'"
                     />
+                    <my-switch v-show="!item.totalState" />
                   </view>
                 </template>
               </view>
@@ -95,7 +183,12 @@
         </view>
       </view>
       <view class="linkList box-shadow">
-        <view class="flex-between listItem" v-for="(item, index) in list" :key="index" @click="goto(item.url)">
+        <view
+          class="flex-between listItem"
+          v-for="(item, index) in list"
+          :key="index"
+          @click="goto(item.url)"
+        >
           <image class="linkIcon" :src="item.icon"></image>
           <view class="flex_1 title">{{ item.title }}</view>
           <view class="flex-start-center">
@@ -105,29 +198,49 @@
             <view v-if="index == 3">{{ orderNum.disNumber }}</view>
             <view v-if="index == 4">{{ orderNum.evaluateNum }}</view>
             <view v-if="index == 5">{{ orderNum.systemMsgNum }}</view>
-            <uni-icons type="arrowright" size="14" style="margin-left: 20rpx;" color="#666"></uni-icons>
+            <uni-icons
+              type="arrowright"
+              size="14"
+              style="margin-left: 20rpx;"
+              color="#666"
+            ></uni-icons>
           </view>
         </view>
       </view>
       <view class="box-shadow pageItem">
         <view :class="['main', isMeg ? 'mainAuto' : '']">
-          <view class="messageItem" v-for="(item, index) in infoList" :key="index">
+          <view
+            class="messageItem"
+            v-for="(item, index) in infoList"
+            :key="index"
+          >
             <view class="flex-between">
               <view class="title">{{ item.title }}</view>
               <view class="edit" v-show="isMeg && item.isEdit">
-                <view @click="textChange(item.key, index)" v-show="!item.isShow">
+                <view
+                  @click="textChange(item.key, index)"
+                  v-show="!item.isShow"
+                >
                   <uni-icons type="compose" size="18" color="#666"></uni-icons>
                   编辑
                 </view>
-                <view @click="editInfo(index)" v-show="item.isShow" class="wanc">
+                <view
+                  @click="editInfo(index)"
+                  v-show="item.isShow"
+                  class="wanc"
+                >
                   <text class="iconfont icon-wancheng"></text>
                   完成
                 </view>
               </view>
             </view>
-            <view :class="['textarea', isMeg ? '' : 'text-clamp']" v-if="!item.isShow">{{ dactorInfo[item.key] || '暂无' }}</view>
+            <view
+              :class="['textarea', isMeg ? '' : 'text-clamp']"
+              v-if="!item.isShow"
+              >{{ dactorInfo[item.key] || '暂无' }}</view
+            >
             <textarea
-            v-if="item.isShow"
+              v-if="item.isShow"
               maxlength="-1"
               class="textarea"
               :focus="isfocus"
@@ -138,40 +251,86 @@
             ></textarea>
           </view>
         </view>
-        <view class="open" @click="isMeg = !isMeg"><image class="openIcon" :src="isMeg ? require('@/assets/hide.png') : require('@/assets/show.png')"></image></view>
+        <view class="open" @click="isMeg = !isMeg"
+          ><image
+            class="openIcon"
+            :src="
+              isMeg
+                ? require('@/assets/hide.png')
+                : require('@/assets/show.png')
+            "
+          ></image
+        ></view>
       </view>
     </view>
     <view class="pageWrap orderWrap" style="z-index: 30;" v-if="isDrugDoc">
       <view class="oerderMain  box-shadow" style="margin-top: -50rpx;">
-        <view class="orderItem flex-between" @click="goto('/pages-doctor/user/bindPhone')">
-          <view class="title">{{ userInfo.phone ? '更换手机号' : '绑定手机号' }}</view>
+        <view
+          class="orderItem flex-between"
+          @click="goto('/pages-doctor/user/bindPhone')"
+        >
+          <view class="title">{{
+            userInfo.phone ? '更换手机号' : '绑定手机号'
+          }}</view>
           <view class="flex-start-center rightInfo">
             <view>{{ util.noPassByMobile(userInfo.phone) }}</view>
-            <uni-icons type="arrowright" size="14" class="rightIcon"></uni-icons>
+            <uni-icons
+              type="arrowright"
+              size="14"
+              class="rightIcon"
+            ></uni-icons>
           </view>
         </view>
         <view
           class="orderItem flex-between"
-          @click="userInfo.hasAuth ? this.$refs.popAuth.open() : goto('/pages-doctor/user/attestation/index')"
+          @click="
+            userInfo.hasAuth
+              ? this.$refs.popAuth.open()
+              : goto('/pages-doctor/user/attestation/index')
+          "
         >
           <view class="title">实名认证</view>
           <view class="flex-start-center rightInfo">
             <view>{{ userInfo.hasAuth ? '已实名' : '未实名' }}</view>
-            <uni-icons type="arrowright" size="14" class="rightIcon"></uni-icons>
+            <uni-icons
+              type="arrowright"
+              size="14"
+              class="rightIcon"
+            ></uni-icons>
           </view>
         </view>
         <view class="orderItem flex-between">
           <view class="title">资质认证</view>
-          <view class="flex-start-center rightInfo" @click="goto('/pages-doctor/user/qualification')">
+          <view
+            class="flex-start-center rightInfo"
+            @click="goto('/pages-doctor/user/qualification')"
+          >
             <view>{{ authNameMap[userInfo.examineState] }}</view>
-            <uni-icons type="arrowright" size="14" class="rightIcon"></uni-icons>
+            <uni-icons
+              type="arrowright"
+              size="14"
+              class="rightIcon"
+            ></uni-icons>
           </view>
         </view>
-        <view class="orderItem flex-between" @click="goto(userInfo.phone ? '/pages-user/setting/resetPassword' : '/pages-doctor/user/bindPhone')">
+        <view
+          class="orderItem flex-between"
+          @click="
+            goto(
+              userInfo.phone
+                ? '/pages-user/setting/resetPassword'
+                : '/pages-doctor/user/bindPhone',
+            )
+          "
+        >
           <view class="title">重置密码</view>
           <view class="flex-start-center rightInfo">
             <view></view>
-            <uni-icons type="arrowright" size="14" class="rightIcon"></uni-icons>
+            <uni-icons
+              type="arrowright"
+              size="14"
+              class="rightIcon"
+            ></uni-icons>
           </view>
         </view>
       </view>
@@ -179,8 +338,19 @@
         <view class="orderItem flex-between">
           <view class="title">头像</view>
           <view class="flex-start-center rightInfo" @click="upImg">
-            <image class="headerImg" :src="avatar ? FILE_URL(avatar) : require('@/assets/user/user_d_head.png')"></image>
-            <uni-icons type="arrowright" size="14" class="rightIcon"></uni-icons>
+            <image
+              class="headerImg"
+              :src="
+                avatar
+                  ? FILE_URL(avatar)
+                  : require('@/assets/user/user_d_head.png')
+              "
+            ></image>
+            <uni-icons
+              type="arrowright"
+              size="14"
+              class="rightIcon"
+            ></uni-icons>
           </view>
         </view>
         <view class="orderItem flex-between">
@@ -218,20 +388,40 @@
           </view>
         </view>
       </view>
-      <button class="submit_btn" type="primary" @click="signOut">注销账号</button>
+      <button class="submit_btn" type="primary" @click="signOut">
+        注销账号
+      </button>
     </view>
-    <pop-select ref="popselect" @submit="selectSubmit" title="用户身份" :list="roleList" @change="radioChangeType"></pop-select>
+    <pop-select
+      ref="popselect"
+      @submit="selectSubmit"
+      title="用户身份"
+      :list="roleList"
+      @change="radioChangeType"
+    ></pop-select>
     <uni-popup ref="realName" :maskClick="false">
       <view class="pop-wrap">
         <view class="pop-main">
-          <view class="pop-title">{{ userInfo.hasAuth ? '资质' : '实名' }}认证提醒</view>
-          <view class="realInfo">您的账号还未进行{{ userInfo.hasAuth ? '资质' : '实名' }}认证</view>
+          <view class="pop-title"
+            >{{ userInfo.hasAuth ? '资质' : '实名' }}认证提醒</view
+          >
+          <view class="realInfo"
+            >您的账号还未进行{{ userInfo.hasAuth ? '资质' : '实名' }}认证</view
+          >
         </view>
         <view class="pop-btn flex-between">
-          <view class="close flex_1" @click="this.$refs.realName.close()">跳过</view>
+          <view class="close flex_1" @click="this.$refs.realName.close()"
+            >跳过</view
+          >
           <view
             class="flex_1"
-            @click="goto(userInfo.hasAuth ? '/pages-doctor/user/qualification' :  '/pages-doctor/user/attestation/index')"
+            @click="
+              goto(
+                userInfo.hasAuth
+                  ? '/pages-doctor/user/qualification'
+                  : '/pages-doctor/user/attestation/index',
+              )
+            "
           >
             前往认证
           </view>
@@ -251,21 +441,32 @@
             <view class="flex_1">{{ userInfo.idCard }}</view>
           </view>
         </view>
-        <view class="pop-btn" @click="this.$refs.popAuth.close()"><text class="close" style="border: 0;">关闭</text></view>
+        <view class="pop-btn" @click="this.$refs.popAuth.close()"
+          ><text class="close" style="border: 0;">关闭</text></view
+        >
       </view>
     </uni-popup>
   </view>
 </template>
 
 <script>
-import util from '@/common/util';
-import popSelect from '@/components/pop-select';
-import { changeRole, upload } from '@/common/request/index';
-import dayjs from 'dayjs';
-import { orderCount, docFindMyConfig, updateH5DocBiz, doctorIntro, changeSelfText, changeAvatar } from '@/common/request/userCenter';
+import util from '@/common/util'
+import popSelect from '@/components/pop-select'
+import { changeRole, upload, getCode } from '@/common/request/index'
+import dayjs from 'dayjs'
+import {
+  orderCount,
+  docFindMyConfig,
+  updateH5DocBiz,
+  doctorIntro,
+  changeSelfText,
+  changeAvatar,
+} from '@/common/request/userCenter'
+import mySwitch from './_switch'
 export default {
   components: {
-    popSelect
+    popSelect,
+    mySwitch,
   },
   data() {
     return {
@@ -274,14 +475,14 @@ export default {
         TO_EXAMINE: '资质待审核',
         TO_CONFIRM: '资质待确认',
         SUCCESS: '资质已认证',
-        FAIL: '资质未认证'
+        FAIL: '资质未认证',
       },
       authNameMap: {
         TO_DOWN: '已驳回',
         TO_EXAMINE: '待审核',
         TO_CONFIRM: '待确认',
         SUCCESS: '已认证',
-        FAIL: '未认证'
+        FAIL: '未认证',
       },
       isOpen: false,
       isMeg: false,
@@ -293,38 +494,38 @@ export default {
         {
           title: '待接诊订单',
           icon: require('@/assets/user/userIcon4.png'),
-          url: '/pages-doctor/user/order/list?current=1'
+          url: '/pages-doctor/user/order/list?current=1',
         },
         {
           title: '我的订单',
           icon: require('@/assets/user/userIcon9.png'),
-          url: '/pages-doctor/user/order/list'
+          url: '/pages-doctor/user/order/list',
         },
         {
           title: '我的处方',
           icon: require('@/assets/user/userIcon5.png'),
-          url: '/pages-doctor/user/prescription/list'
+          url: '/pages-doctor/user/prescription/list',
         },
         {
           title: '我的处置',
           icon: require('@/assets/user/userIcon12.png'),
-          url: '/pages-doctor/treatment/history/index'
+          url: '/pages-doctor/treatment/history/index',
         },
         {
           title: '我的评价',
           icon: require('@/assets/user/userIcon6.png'),
-          url: '/pages-doctor/myEvaluate/list'
+          url: '/pages-doctor/myEvaluate/list',
         },
         {
           title: '我的消息',
           icon: require('@/assets/user/userIcon8.png'),
-          url: '/pages-doctor/message/list'
+          url: '/pages-doctor/message/list',
         },
         {
           title: '账号管理',
           icon: require('@/assets/user/userIcon10.png'),
-          url: '/pages-doctor/user/account'
-        }
+          url: '/pages-doctor/user/account',
+        },
       ],
       bizList: [],
       bizTypeName: '',
@@ -337,185 +538,221 @@ export default {
         skilled: '',
         intro: '',
         practiceInfo: '',
-        academicInfo: ''
+        academicInfo: '',
       },
       infoList: [
         {
           title: '擅长',
           key: 'skilled',
           isEdit: true,
-          isShow: false
+          isShow: false,
         },
         {
           title: '个人简介',
           key: 'intro',
           isEdit: true,
-          isShow: false
+          isShow: false,
         },
         {
           title: '执业经历',
           key: 'practiceInfo',
           isEdit: true,
-          isShow: false
+          isShow: false,
         },
         {
           title: '学术经历',
           key: 'academicInfo',
           isEdit: true,
-          isShow: false
+          isShow: false,
         },
         {
           title: '执业范围',
           key: 'practiceArea',
           isEdit: false,
-          isShow: false
-        }
+          isShow: false,
+        },
       ],
       isDrugDoc: false,
-      isfocus: true
-    };
+      isfocus: true,
+    }
   },
   computed: {
     userInfo: function() {
-      return this.$store.state.userInfo;
+      return this.$store.state.userInfo
     },
     roleList: function() {
-      return this.$store.state.userInfo.roleList;
+      return this.$store.state.userInfo.roleList
     },
     avatar: function() {
-      return this.$store.state.avatar;
+      return this.$store.state.avatar
     },
     workYear: function() {
       return (
         dayjs()
           .diff(this.dactorInfo.workHistory, 'y', true)
           .toFixed(1) * 1
-      );
-    }
+      )
+    },
   },
   created() {
     uni.setNavigationBarTitle({
-      title: '我的'
-    });
+      title: '我的',
+    })
     if (this.userInfo.clientType == 'DRUG_DOC') {
-      uni.setStorageSync('setStatusIndexFunc', 1);
-      this.isDrugDoc = true;
+      uni.setStorageSync('setStatusIndexFunc', 1)
+      this.isDrugDoc = true
     } else {
-      this.getorderCount();
-      this.getdocFindMyConfig();
-      this.getdoctorIntro();
+      this.getorderCount()
+      this.getdocFindMyConfig()
+      this.getdoctorIntro()
     }
   },
   mounted() {
-this.isexamineOpen()
+    this.isexamineOpen()
   },
   methods: {
-    isexamineOpen(){
+    //扫码
+    scanning() {
+      uni.scanCode({
+        success: async res => {
+          console.log('条码类型：' + res.scanType)
+          console.log('条码内容：' + res.result)
+          if (!res.result) return
+          uni.showLoading()
+          //code换取手机号
+          const phone = await getCode({ code: res.result })
+          this.$store.commit('setCodePhone', phone)
+          uni.hideLoading()
+          //进入授权页，并带入扫码得到的code
+          uni.navigateTo({
+            url: `/pages-doctor/autograph/autograph?code=${res.result}`,
+          })
+        },
+      })
+    },
+    isexamineOpen() {
       if (!this.userInfo.hasAuth) {
-        this.$refs.realName.open();
+        this.$refs.realName.open()
       } else {
-        if (this.userInfo.examineState != 'TO_EXAMINE' && this.userInfo.examineState != 'SUCCESS') {
-          this.$refs.realName.open();
+        if (
+          this.userInfo.examineState != 'TO_EXAMINE' &&
+          this.userInfo.examineState != 'SUCCESS'
+        ) {
+          this.$refs.realName.open()
         }
       }
     },
     // 医生详情
     async getdoctorIntro() {
       this.dactorInfo = await doctorIntro({
-        id: uni.getStorageSync('userId')
-      });
+        id: uni.getStorageSync('userId'),
+      })
       // if (this.dactorInfo.workHistory) {
       //   this.dactorInfo.workHistory = this.dactorInfo.workHistory.split('年')[0]
       // } else {
       //   this.dactorInfo.workHistory = 0
       // }
-      this.form.skilled = this.dactorInfo.skilled || '';
-      this.form.intro = this.dactorInfo.intro || '';
-      this.form.practiceInfo = this.dactorInfo.practiceInfo || '';
-      this.form.academicInfo = this.dactorInfo.academicInfo || '';
+      this.form.skilled = this.dactorInfo.skilled || ''
+      this.form.intro = this.dactorInfo.intro || ''
+      this.form.practiceInfo = this.dactorInfo.practiceInfo || ''
+      this.form.academicInfo = this.dactorInfo.academicInfo || ''
     },
     textChange(type, index) {
-      this.infoList[index].isShow = !this.infoList[index].isShow;
+      this.infoList[index].isShow = !this.infoList[index].isShow
       this.$nextTick(() => {
-        setTimeout(()=>{
-          this.isfocus = true;
-        },100)
-      });
+        setTimeout(() => {
+          this.isfocus = true
+        }, 100)
+      })
     },
     // 修改医生详情
     async editInfo(index) {
-      await changeSelfText(this.form);
-      this.infoList[index].isShow = !this.infoList[index].isShow;
-      await this.getdoctorIntro();
+      await changeSelfText(this.form)
+      this.infoList[index].isShow = !this.infoList[index].isShow
+      await this.getdoctorIntro()
       uni.showToast({
-        title: '保存成功！'
-      });
+        title: '保存成功！',
+      })
     },
     changeRole() {
-      console.log(this.userInfo.roleList);
+      console.log(this.userInfo.roleList)
       if (this.userInfo.roleList.length > 1) {
-        this.$refs.popselect.open();
+        this.$refs.popselect.open()
       }
     },
     radioChangeType(e) {
-      console.log(e);
-      this.roleId = e;
+      console.log(e)
+      this.roleId = e
     },
     //切换角色
     selectSubmit() {
       if (this.roleId == this.userInfo.roleId) {
-        this.$refs.popselect.close();
+        this.$refs.popselect.close()
       } else {
         changeRole({
-          roleId: this.roleId
+          roleId: this.roleId,
         }).then(res => {
-					this.webSocket.close();
-          uni.setStorageSync('setStatusIndexFunc', 2);
-          this.$store.dispatch('loginInfo');
-          this.$refs.popselect.close();
-        });
+          this.webSocket.close()
+          uni.setStorageSync('setStatusIndexFunc', 2)
+          this.$store.dispatch('loginInfo')
+          this.$refs.popselect.close()
+        })
       }
     },
     // 获取订单数量
     getorderCount() {
       orderCount().then(res => {
-        this.orderNum = res;
-      });
+        this.orderNum = res
+      })
     },
     // 获取已开通业务
     async getdocFindMyConfig() {
       let list = await docFindMyConfig({
-        doctorId: uni.getStorageSync('userId')
-      });
-      let afterData = [];
-      list.forEach(item => {
-        let flag = afterData.find(item1 => item1.bizType === item.bizType);
+        doctorId: uni.getStorageSync('userId'),
+      })
+      /* ---在线咨询放第一位 */
+      const first = list.find(item => item.bizType === 'CONSULT')
+      const newList = list.filter(item => item.bizType !== 'CONSULT')
+      newList.unshift(first)
+      console.log(newList, '-------------------')
+      /* ------------ */
+      let afterData = []
+      newList.forEach(item => {
+        let flag = afterData.find(item1 => item1.bizType === item.bizType)
         if (!flag) {
           afterData.push({
             bizType: item.bizType,
             bizWayList: [item],
-            totalState: item.totalState
-          });
+            totalState: item.totalState,
+          })
         } else {
-          flag.bizWayList.push(item);
+          flag.bizWayList.push(item)
         }
-      });
+      })
 
-      this.bizTypeName = afterData.map(item => (item.bizType == 'CONSULT' ? '在线咨询' : item.bizType == 'REPEAT_CLINIC' ? '在线复诊' : '慢病续方'));
-      this.bizList = afterData;
+      this.bizTypeName = afterData.map(item =>
+        item.bizType == 'CONSULT'
+          ? '在线咨询'
+          : item.bizType == 'REPEAT_CLINIC'
+          ? '在线复诊'
+          : item.bizType == 'REPORT_READ'
+          ? '报告解读'
+          : '慢病续方',
+      )
+      this.bizList = afterData
     },
     // 修改业务
     async editupdateH5DocBiz(data) {
-      await updateH5DocBiz(data);
-      await this.getdocFindMyConfig();
+      await updateH5DocBiz(data)
+      await this.getdocFindMyConfig()
     },
     //修改业务状态
     bizTypeChange(e, item) {
       this.editupdateH5DocBiz({
         doctorId: uni.getStorageSync('userId'),
         bizType: item.bizType,
-        state: e.target.value ? 1 : 0
-      });
+        state: e.target.value ? 1 : 0,
+      })
     },
     //修改业务方式
     bizWayChange(e, item, f) {
@@ -523,49 +760,49 @@ this.isexamineOpen()
         doctorId: uni.getStorageSync('userId'),
         bizType: item.bizType,
         bizWay: f.bizWay,
-        state: e.target.value ? 1 : 0
-      });
+        state: e.target.value ? 1 : 0,
+      })
     },
     // 修改接诊人数
     numChange(e, item, f) {
-      console.log(e);
+      console.log(e)
       this.editupdateH5DocBiz({
         doctorId: uni.getStorageSync('userId'),
         bizType: item.bizType,
         bizWay: f.bizWay,
-        num: e
-      });
+        num: e,
+      })
     },
     goto(url) {
-      this.$refs.realName.close();
+      this.$refs.realName.close()
       uni.navigateTo({
-        url: url
-      });
+        url: url,
+      })
     },
     toQrcode() {
       uni.navigateTo({
-        url: '/pages-doctor/qrcode/qrcode'
-      });
+        url: '/pages-doctor/qrcode/qrcode',
+      })
     },
     // 上传头像
     upImg() {
-      let that = this;
+      let that = this
       uni.chooseImage({
         count: 1,
         success: chooseImageRes => {
-          const tempFilePaths = chooseImageRes.tempFilePaths;
+          const tempFilePaths = chooseImageRes.tempFilePaths
           upload(tempFilePaths[0]).then(async res => {
-            console.log(res.body);
+            console.log(res.body)
             await changeAvatar({
-              avatar: res.body
-            });
-            that.$store.commit('avatar', res.body);
-          });
-        }
-      });
+              avatar: res.body,
+            })
+            that.$store.commit('avatar', res.body)
+          })
+        },
+      })
     },
     reload() {
-      this.$store.dispatch('loginInfo');
+      this.$store.dispatch('loginInfo')
     },
     signOut() {
       uni.showModal({
@@ -574,11 +811,11 @@ this.isexamineOpen()
           if (res.confirm) {
             this.$store.dispatch('signOut')
           }
-        }
-      });
-    }
-  }
-};
+        },
+      })
+    },
+  },
+}
 </script>
 
 <style lang="scss" scoped>
@@ -825,7 +1062,11 @@ this.isexamineOpen()
 
     .functionMain {
       padding-left: 40rpx;
-      background: linear-gradient(90deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0) 100%);
+      background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.1) 0%,
+        rgba(0, 0, 0, 0) 100%
+      );
 
       .Item {
         border-bottom: 1px dashed #cccccc;
@@ -846,11 +1087,11 @@ this.isexamineOpen()
       }
 
       .num {
-        /deep/.uni-numbox {
+        ::v-deep.uni-numbox {
           align-items: center;
         }
 
-        /deep/.uni-numbox__value {
+        ::v-deep.uni-numbox__value {
           border: 1px solid #ccc;
           border-radius: 4rpx;
           background: #fff;
@@ -860,7 +1101,7 @@ this.isexamineOpen()
           font-size: 30rpx;
         }
 
-        /deep/.uni-numbox__minus {
+        ::v-deep.uni-numbox__minus {
           background-color: $uni-color-primary;
           border: 0;
           border-radius: 50%;
@@ -878,7 +1119,7 @@ this.isexamineOpen()
           }
         }
 
-        /deep/.uni-numbox__plus {
+        ::v-deep.uni-numbox__plus {
           background-color: $uni-color-primary;
           border: 0;
           border-radius: 50%;
@@ -899,15 +1140,15 @@ this.isexamineOpen()
     }
 
     .num.disabled {
-      /deep/.uni-numbox__value {
+      ::v-deep.uni-numbox__value {
         color: #ccc;
       }
 
-      /deep/.uni-numbox__minus {
+      ::v-deep.uni-numbox__minus {
         background-color: #ccc;
       }
 
-      /deep/.uni-numbox__plus {
+      ::v-deep.uni-numbox__plus {
         background-color: #ccc;
       }
     }
@@ -924,19 +1165,28 @@ this.isexamineOpen()
       }
 
       .num {
-        /deep/.uni-numbox__value {
+        ::v-deep.uni-numbox__value {
           color: #ccc;
         }
 
-        /deep/.uni-numbox__minus {
+        ::v-deep.uni-numbox__minus {
           background-color: #ccc;
         }
 
-        /deep/.uni-numbox__plus {
+        ::v-deep.uni-numbox__plus {
           background-color: #ccc;
         }
       }
     }
+  }
+  .nowDisabled {
+    -webkit-filter: grayscale(100%);
+    -moz-filter: grayscale(100%);
+    -ms-filter: grayscale(100%);
+    -o-filter: grayscale(100%);
+    filter: grayscale(100%);
+    filter: gray;
+    filter: progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);
   }
 }
 

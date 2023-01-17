@@ -1,7 +1,6 @@
-
 {
   "pages": [
-    // pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+    // #ifdef MP-WEIXIN
     {
       "path": "pages/login/userLogin",
       "style": {
@@ -9,6 +8,15 @@
         "h5": {
           "titleNView": false
         }
+      }
+    },
+    // #endif
+    {
+      "path": "pages/index-user",
+      "style": {
+        "navigationBarTitleText": "首页",
+        "enablePullDownRefresh": true,
+        "onReachBottomDistance": 80
       }
     },
     {
@@ -21,14 +29,6 @@
       }
     },
     {
-      "path": "pages/index-user",
-      "style": {
-        "navigationBarTitleText": "首页",
-        "enablePullDownRefresh": true,
-        "onReachBottomDistance": 80
-      }
-    },
-    {
       "path": "pages/login/excessive",
       "style": {
         "navigationBarTitleText": "加载中",
@@ -37,7 +37,6 @@
         }
       }
     },
-
     {
       "path": "pages/index-doctor",
       "style": {
@@ -135,13 +134,25 @@
       }
     },
     {
+      "path": "pages/hcOrderPay/index",
+      "style": {
+        "navigationBarTitleText": "缴费",
+        "h5": {
+          "titleNView": false
+        }
+      }
+    },
+    {
       "path": "pages/web-view/web-view",
       "style": {}
     }
   ],
-  "subPackages": [{
+  "subPackages": [
+    // #ifdef MP-WEIXIN
+    {
       "root": "pages-user",
-      "pages": [{
+      "pages": [
+        {
           "path": "setting/index",
           "style": {
             "navigationBarTitleText": "个人信息设置"
@@ -207,25 +218,36 @@
         {
           "path": "patientManagement/list",
           "style": {
-            "navigationBarTitleText": "管理就诊人"
+            "navigationBarTitleText": "管理健康卡"
           }
         },
         {
           "path": "patientManagement/detail",
           "style": {
-            "navigationBarTitleText": "就诊人详情"
+            "navigationBarTitleText": "健康卡"
           }
         },
         {
           "path": "patientManagement/add",
           "style": {
-            "navigationBarTitleText": "新增就诊人"
+            "navigationBarTitleText": "新增健康卡",
+            "mp-weixin": {
+              "usingComponents": {
+                "health-card-login": "plugin://healthCardPlugins/healthCardLogin"
+              }
+            }
           }
         },
         {
           "path": "patientManagement/edit",
           "style": {
-            "navigationBarTitleText": "新增就诊人"
+            "navigationBarTitleText": "更新健康卡"
+          }
+        },
+        {
+          "path": "patientManagement/infoManage",
+          "style": {
+            "navigationBarTitleText": "管理健康卡"
           }
         },
         {
@@ -332,6 +354,12 @@
           }
         },
         {
+          "path": "guidance/guidance",
+          "style": {
+            "navigationBarTitleText": "智能导诊"
+          }
+        },
+        {
           "path": "home/information/InformationDetail",
           "style": {
             "navigationBarTitleText": "资讯详情"
@@ -390,12 +418,74 @@
             "navigationBarTitleText": "在线医嘱详情",
             "backgroundColor": "#f2f2f2"
           }
+        },
+        {
+          "path": "nucleicAcidAppointment/flowform/index",
+          "style": {
+            "navigationBarTitleText": "填写流调表",
+            "backgroundColor": "#f2f2f2"
+          }
+        },
+        {
+          "path": "nucleicAcidAppointment/flowform/selectItem",
+          "style": {
+            "navigationBarTitleText": "科室排班",
+            "backgroundColor": "#f2f2f2"
+          }
+        },
+        {
+          "path": "nucleicAcidAppointment/flowform/detailpage",
+          "style": {
+            "navigationBarTitleText": "预约详情",
+            "backgroundColor": "#f2f2f2"
+          }
+        },
+        {
+          "path": "nucleicAcidAppointment/flowform/success",
+          "style": {
+            "navigationBarTitleText": "预约详情",
+            "backgroundColor": "#f2f2f2"
+          }
+        },
+        {
+          "path": "nucleicAcidAppointment/record/index",
+          "style": {
+            "navigationBarTitleText": "核酸检测记录",
+            "backgroundColor": "#f2f2f2"
+          }
+        },
+        {
+          "path": "nucleicAcidAppointment/record/detail",
+          "style": {
+            "navigationBarTitleText": "预约记录详情",
+            "backgroundColor": "#f2f2f2"
+          }
+        },
+        {
+          "path": "medicationReminder/list",
+          "style": {
+            "navigationBarTitleText": "用药提醒"
+          }
+        },
+        {
+          "path": "medicationReminder/add",
+          "style": {
+            "navigationBarTitleText": "新增提醒"
+          }
+        },
+        {
+          "path": "appointment/list",
+          "style": {
+            "navigationBarTitleText": "医技预约"
+          }
         }
       ]
     },
+    // #endif
     {
       "root": "pages-doctor",
-      "pages": [{
+      "pages": [
+        {
           "path": "room/room",
           "style": {
             "navigationBarTitleText": "在线复诊",
@@ -577,257 +667,561 @@
           "style": {
             "navigationBarTitleText": "处方单"
           }
+        },
+        {
+          "path": "autograph/autograph",
+          "style": {
+            "navigationBarTitleText": "签名"
+          }
         }
-
       ]
     },
-   {
-       "root": "pages-zy",
-       "pages": [{
-           "path": "appointmentDoc/deptList",
-           "style": {
-             "navigationBarTitleText": "预约挂号"
-           }
-         },
-         {
-           "path": "appointmentDoc/docList",
-           "style": {
-             "navigationBarTitleText": "选择预约医生"
-           }
-         },
-         {
-           "path": "appointmentDoc/appointmentInfo",
-           "style": {
-             "navigationBarTitleText": "预约挂号选择时间"
-           }
-         },
-         {
-           "path": "outpatientPayment/list",
-           "style": {
-             "navigationBarTitleText": "门诊缴费"
-           }
-         },
-         {
-           "path": "outpatientPayment/detail",
-           "style": {
-             "navigationBarTitleText": "门诊缴费详情"
-           }
-         },
-         {
-           "path": "inpatientServices/detailedList",
-           "style": {
-             "navigationBarTitleText": "住院一日清单"
-           }
-         },
-         {
-           "path": "inpatientServices/listInfo",
-           "style": {
-             "navigationBarTitleText": "住院一日清单详情"
-           }
-         },
-         {
-           "path": "inpatientServices/deposit",
-           "style": {
-             "navigationBarTitleText": "住院押金"
-           }
-         },
-         {
-           "path": "inpatientServices/paymentRecord",
-           "style": {
-             "navigationBarTitleText": "住院缴费记录"
-           }
-         },
-         {
-           "path": "reportQuery/list",
-           "style": {
-             "navigationBarTitleText": "报告查询"
-           }
-         },
-         {
-           "path": "reportQuery/detail",
-           "style": {
-             "navigationBarTitleText": "报告查询详情"
-           }
-         },
-         {
-           "path": "reportQuery/ctImg",
-           "style": {
-             "navigationBarTitleText": "CT影像"
-           }
-         },
-         {
-           "path": "reportQuery/ctImgInfo",
-           "style": {
-             "navigationBarTitleText": "CT影像详情"
-           }
-         },
-         {
-           "path": "registerRecord/list",
-           "style": {
-             "navigationBarTitleText": "挂号记录"
-           }
-         },
-         {
-           "path": "registerRecord/detail",
-           "style": {
-             "navigationBarTitleText": "挂号记录详情"
-           }
-         },
-         {
-           "path": "medicalRecords/list",
-           "style": {
-             "navigationBarTitleText": "就诊记录"
-           }
-         },
-         {
-           "path": "medicalRecords/detail",
-           "style": {
-             "navigationBarTitleText": "病历详情"
-           }
-         },
-         {
-           "path": "myAppointment/list",
-           "style": {
-             "navigationBarTitleText": "我的预约"
-           }
-         },
-         {
-           "path": "myAppointment/detail",
-           "style": {
-             "navigationBarTitleText": "体检预约详情"
-           }
-         },
-         {
-           "path": "bookingPayment/list",
-           "style": {
-             "navigationBarTitleText": "预约缴费"
-           }
-         },
-         {
-           "path": "otherPayment/list",
-           "style": {
-             "navigationBarTitleText": "其他缴费"
-           }
-         },
-         {
-           "path": "evaluate/list",
-           "style": {
-             "navigationBarTitleText": "就医点评"
-           }
-         },
-         {
-           "path": "navigation/inHosNavigate",
-           "style": {
-             "navigationBarTitleText": "院内导航"
-           }
-         },
-         {
-           "path": "navigation/toHosNavigate",
-           "style": {
-             "navigationBarTitleText": "来院导航"
-           }
-         },
-         {
-           "path": "myDoctor/list",
-           "style": {
-             "navigationBarTitleText": "我的医生"
-           }
-         },
-         {
-           "path": "physical/appointment/list",
-           "style": {
-             "navigationBarTitleText": "体检预约"
-           }
-         },
-         {
-           "path": "physical/appointment/detail",
-           "style": {
-             "navigationBarTitleText": "体检预约详情"
-           }
-         },
-         {
-           "path": "physical/appointment/submit",
-           "style": {
-             "navigationBarTitleText": "体检预约信息"
-           }
-         },
-         {
-           "path": "physical/record/list",
-           "style": {
-             "navigationBarTitleText": "体检记录"
-           }
-         },
-         {
-           "path": "physical/record/detail",
-           "style": {
-             "navigationBarTitleText": "体检记录详情"
-           }
-         },
-         {
-           "path": "physical/payment/list",
-           "style": {
-             "navigationBarTitleText": "体检缴费"
-           }
-         },
-         {
-           "path": "physical/payment/detail",
-           "style": {
-             "navigationBarTitleText": "体检缴费详情"
-           }
-         },
-         {
-           "path": "physical/report/list",
-           "style": {
-             "navigationBarTitleText": "体检报告"
-           }
-         },
-         {
-           "path": "physical/report/detail",
-           "style": {
-             "navigationBarTitleText": "体检报告详情"
-           }
-         },
-         {
-           "path": "physical/report/itemInfo",
-           "style": {
-             "navigationBarTitleText": "一般检查"
-           }
-         },
-         {
-           "path": "physical/notice",
-           "style": {
-             "navigationBarTitleText": "体检须知"
-           }
-         },
-         {
-           "path": "starExpert/list",
-           "style": {
-             "navigationBarTitleText": "明星专家"
-           }
-         },
-         {
-           "path": "myPayment/list",
-           "style": {
-             "navigationBarTitleText": "我的缴费"
-           }
-         },
-         {
-           "path": "outpatientPayment/smartWait",
-           "style": {
-             "navigationBarTitleText": "智能候诊"
-           }
-         }
-       ]
-     }
-   ],
+    {
+      "root": "pages-zy",
+      "pages": [
+        {
+          "path": "appointmentDoc/deptList",
+          "style": {
+            "navigationBarTitleText": "预约挂号"
+          }
+        },
+        {
+          "path": "appointmentDoc/docList",
+          "style": {
+            "navigationBarTitleText": "选择预约医生"
+          }
+        },
+        {
+          "path": "appointmentDoc/appointmentInfo",
+          "style": {
+            "navigationBarTitleText": "预约挂号选择时间"
+          }
+        },
+        {
+          "path": "outpatientPayment/list",
+          "style": {
+            "navigationBarTitleText": "门诊缴费"
+          }
+        },
+        {
+          "path": "outpatientPayment/detail",
+          "style": {
+            "navigationBarTitleText": "门诊缴费详情"
+          }
+        },
+        {
+          "path": "inpatientServices/detailedList",
+          "style": {
+            "navigationBarTitleText": "住院一日清单"
+          }
+        },
+        {
+          "path": "inpatientServices/listInfo",
+          "style": {
+            "navigationBarTitleText": "住院一日清单详情"
+          }
+        },
+        {
+          "path": "inpatientServices/deposit",
+          "style": {
+            "navigationBarTitleText": "住院押金"
+          }
+        },
+        {
+          "path": "inpatientServices/paymentRecord",
+          "style": {
+            "navigationBarTitleText": "住院缴费记录"
+          }
+        },
+        {
+          "path": "reportQuery/list",
+          "style": {
+            "navigationBarTitleText": "报告查询"
+          }
+        },
+        {
+          "path": "reportQuery/detail",
+          "style": {
+            "navigationBarTitleText": "报告查询详情"
+          }
+        },
+        {
+          "path": "reportQuery/ctImg",
+          "style": {
+            "navigationBarTitleText": "CT影像"
+          }
+        },
+        {
+          "path": "reportQuery/ctImgInfo",
+          "style": {
+            "navigationBarTitleText": "CT影像详情"
+          }
+        },
+        {
+          "path": "registerRecord/list",
+          "style": {
+            "navigationBarTitleText": "挂号记录"
+          }
+        },
+        {
+          "path": "registerRecord/detail",
+          "style": {
+            "navigationBarTitleText": "挂号记录详情"
+          }
+        },
+        {
+          "path": "medicalRecords/list",
+          "style": {
+            "navigationBarTitleText": "就诊记录"
+          }
+        },
+        {
+          "path": "medicalRecords/detail",
+          "style": {
+            "navigationBarTitleText": "病历详情"
+          }
+        },
+        {
+          "path": "myAppointment/list",
+          "style": {
+            "navigationBarTitleText": "我的预约"
+          }
+        },
+        {
+          "path": "myAppointment/detail",
+          "style": {
+            "navigationBarTitleText": "体检预约详情"
+          }
+        },
+        {
+          "path": "bookingPayment/list",
+          "style": {
+            "navigationBarTitleText": "预约缴费"
+          }
+        },
+        {
+          "path": "otherPayment/list",
+          "style": {
+            "navigationBarTitleText": "其他缴费"
+          }
+        },
+        {
+          "path": "evaluate/list",
+          "style": {
+            "navigationBarTitleText": "就医点评"
+          }
+        },
+        {
+          "path": "navigation/inHosNavigate",
+          "style": {
+            "navigationBarTitleText": "院内导航"
+          }
+        },
+        {
+          "path": "navigation/toHosNavigate",
+          "style": {
+            "navigationBarTitleText": "来院导航"
+          }
+        },
+        {
+          "path": "myDoctor/list",
+          "style": {
+            "navigationBarTitleText": "我的医生"
+          }
+        },
+        {
+          "path": "physical/appointment/list",
+          "style": {
+            "navigationBarTitleText": "体检预约"
+          }
+        },
+        {
+          "path": "physical/appointment/detail",
+          "style": {
+            "navigationBarTitleText": "体检预约详情"
+          }
+        },
+        {
+          "path": "physical/appointment/submit",
+          "style": {
+            "navigationBarTitleText": "体检预约信息"
+          }
+        },
+        {
+          "path": "physical/record/list",
+          "style": {
+            "navigationBarTitleText": "体检记录"
+          }
+        },
+        {
+          "path": "physical/record/detail",
+          "style": {
+            "navigationBarTitleText": "体检记录详情"
+          }
+        },
+        {
+          "path": "physical/payment/list",
+          "style": {
+            "navigationBarTitleText": "体检缴费"
+          }
+        },
+        {
+          "path": "physical/payment/detail",
+          "style": {
+            "navigationBarTitleText": "体检缴费详情"
+          }
+        },
+        {
+          "path": "physical/report/list",
+          "style": {
+            "navigationBarTitleText": "体检报告"
+          }
+        },
+        {
+          "path": "physical/report/detail",
+          "style": {
+            "navigationBarTitleText": "体检报告详情"
+          }
+        },
+        {
+          "path": "physical/report/itemInfo",
+          "style": {
+            "navigationBarTitleText": "一般检查"
+          }
+        },
+        {
+          "path": "physical/notice",
+          "style": {
+            "navigationBarTitleText": "体检须知"
+          }
+        },
+        {
+          "path": "starExpert/list",
+          "style": {
+            "navigationBarTitleText": "专家介绍"
+          }
+        },
+        {
+          "path": "myPayment/list",
+          "style": {
+            "navigationBarTitleText": "我的缴费"
+          }
+        },
+        {
+          "path": "outpatientPayment/smartWait",
+          "style": {
+            "navigationBarTitleText": "智能候诊"
+          }
+        },
+        {
+          "path": "Introduction/index",
+          "style": {
+            "navigationBarTitleText": "就诊攻略",
+            "backgroundColor": "#f2f2f2"
+          }
+        },
+        {
+          "path": "feedBack/index",
+          "style": {
+            "navigationBarTitleText": "意见反馈"
+          }
+        },
+        {
+          "path": "sgin/index",
+          "style": {
+            "navigationBarTitleText": "预约签到"
+          }
+        },
+        {
+          "path": "deptList/index",
+          "style": {
+            "navigationBarTitleText": "科室简介"
+          }
+        },
+        {
+          "path": "deptList/detail",
+          "style": {
+            "navigationBarTitleText": "科室详情"
+          }
+        },
+        {
+          "path": "hospRecords/detail",
+          "style": {
+            "navigationBarTitleText": "就诊记录详情"
+          }
+        },
+        {
+          "path": "noticePage/index",
+          "style": {
+            "navigationBarTitleText": "就诊须知"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages-zxs",
+      "pages": [
+        {
+          "path": "index",
+          "style": {
+            "navigationBarTitleText": "首页"
+          }
+        },
+        {
+          "path": "appoint-patient/index",
+          "style": {
+            "navigationBarTitleText": "预约患者"
+          }
+        },
+        {
+          "path": "appoint-patient/detail",
+          "style": {
+            "navigationBarTitleText": "预约单详情"
+          }
+        },
+        {
+          "path": "psychological-consulting/index",
+          "style": {
+            "navigationBarTitleText": "心理咨询"
+          }
+        },
+        {
+          "path": "psychological-consulting/endVisit",
+          "style": {
+            "navigationBarTitleText": "结束接诊"
+          }
+        },
+        {
+          "path": "patient-leave/index",
+          "style": {
+            "navigationBarTitleText": "患者请假"
+          }
+        },
+        {
+          "path": "suspension-apply/index",
+          "style": {
+            "navigationBarTitleText": "停诊申请"
+          }
+        },
+        {
+          "path": "suspension-apply/edit",
+          "style": {
+            "navigationBarTitleText": "停诊申请"
+          }
+        },
+        {
+          "path": "myPatient/list",
+          "style": {
+            "navigationBarTitleText": "我的患者"
+          }
+        },
+        {
+          "path": "my-active/index",
+          "style": {
+            "navigationBarTitleText": "我的活动"
+          }
+        },
+        {
+          "path": "my-active/detail",
+          "style": {
+            "navigationBarTitleText": "活动详情"
+          }
+        },
+        {
+          "path": "signupOrder/index",
+          "style": {
+            "navigationBarTitleText": "报名名单"
+          }
+        },
+        {
+          "path": "singRecord/index",
+          "style": {
+            "navigationBarTitleText": "报名记录"
+          }
+        },
+        {
+          "path": "myPatient/patientInfo",
+          "style": {
+            "navigationBarTitleText": "患者详情"
+          }
+        },
+        {
+          "path": "myPatient/visitRcordInfo",
+          "style": {
+            "navigationBarTitleText": "就诊记录详情"
+          }
+        },
+        {
+          "path": "myPatient/orderListInfo",
+          "style": {
+            "navigationBarTitleText": "预约单详情"
+          }
+        },
+        {
+          "path": "statistics/index",
+          "style": {
+            "navigationBarTitleText": "我的统计"
+          }
+        }
+      ]
+    }
+    // {
+    //   "root": "pages-sf",
+    //   "pages": [
+    //     {
+    //       "path": "src/riskAssess/index",
+    //       "style": {
+    //         "navigationBarTitleText": "风险评估",
+    //         "backgroundColor": "#f2f2f2"
+    //       }
+    //     },
+    //     {
+    //       "path": "src/myFollow/index",
+    //       "style": {
+    //         "navigationBarTitleText": "我的随访",
+    //         "backgroundColor": "#f2f2f2"
+    //       }
+    //     },
+    //     {
+    //       "path": "src/healthEducation/index",
+    //       "style": {
+    //         "navigationBarTitleText": "健康宣教",
+    //         "backgroundColor": "#f2f2f2"
+    //       }
+    //     },
+    //     {
+    //       "path": "src/deviceControl/index",
+    //       "style": {
+    //         "navigationBarTitleText": "健康监测",
+    //         "backgroundColor": "#f2f2f2"
+    //       }
+    //     },
+    //     {
+    //       "path": "src/ownAnswer/index",
+    //       "style": {
+    //         "navigationBarTitleText": "咨询",
+    //         "backgroundColor": "#f2f2f2"
+    //       }
+    //     },
+    //     {
+    //       "path": "src/followNotice/index",
+    //       "style": {
+    //         "navigationBarTitleText": "随访通知",
+    //         "backgroundColor": "#f2f2f2"
+    //       }
+    //     },
+    //     {
+    //       "path": "src/riskAssess/questionInfo/index",
+    //       "style": {
+    //         "navigationBarTitleText": "评估问卷详情",
+    //         "backgroundColor": "#f2f2f2"
+    //       }
+    //     },
+    //     {
+    //       "path": "src/riskAssess/assessInfo/index",
+    //       "style": {
+    //         "navigationBarTitleText": "评估结果详情",
+    //         "backgroundColor": "#f2f2f2"
+    //       }
+    //     },
+    //     {
+    //       "path": "src/myFollow/folloOrder/index",
+    //       "style": {
+    //         "navigationBarTitleText": "随访单",
+    //         "backgroundColor": "#f2f2f2"
+    //       }
+    //     },
+    //     {
+    //       "path": "src/myFollow/folloOrder/askFollow",
+    //       "style": {
+    //         "navigationBarTitleText": "随访咨询",
+    //         "backgroundColor": "#f2f2f2"
+    //       }
+    //     },
+    //     {
+    //       "path": "src/healthEducation/seach/index",
+    //       "style": {
+    //         "navigationBarTitleText": "搜索",
+    //         "backgroundColor": "#f2f2f2"
+    //       }
+    //     },
+    //     {
+    //       "path": "src/healthEducation/article/index",
+    //       "style": {
+    //         "navigationBarTitleText": "文章详情",
+    //         "backgroundColor": "#f2f2f2"
+    //       }
+    //     },
+    //     {
+    //       "path": "src/deviceControl/newEquipment/index",
+    //       "style": {
+    //         "navigationBarTitleText": "新增设备",
+    //         "backgroundColor": "#f2f2f2"
+    //       }
+    //     },
+    //     {
+    //       "path": "src/satisfaction/index",
+    //       "style": {
+    //         "navigationBarTitleText": "满意度调查",
+    //         "backgroundColor": "#f2f2f2"
+    //       }
+    //     },
+    //     {
+    //       "path": "src/satisfaction/investOrder/index",
+    //       "style": {
+    //         "navigationBarTitleText": "填写问卷",
+    //         "backgroundColor": "#f2f2f2"
+    //       }
+    //     }
+    //   ]
+    // }
+    // {
+    //   "root": "pages-cdr",
+    //   "pages": [
+    //     {
+    //       "path": "allRecords/index",
+    //       "style": {
+    //         "navigationBarTitleText": "就诊记录",
+    //         "backgroundColor": "#f2f2f2",
+    //         "onReachBottomDistance": 60
+    //       }
+    //     },
+    //     {
+    //       "path": "allRecords/detail",
+    //       "style": {
+    //         "navigationBarTitleText": "就诊记录详情",
+    //         "backgroundColor": "#f2f2f2",
+    //         "onReachBottomDistance": 60
+    //       }
+    //     },
+    //     {
+    //       "path": "allDetailList/nursingDetail/index",
+    //       "style": {
+    //         "navigationBarTitleText": "护理详情",
+    //         "backgroundColor": "#f2f2f2"
+    //       }
+    //     },
+    //     {
+    //       "path": "allDetailList/inspectDetail/index",
+    //       "style": {
+    //         "navigationBarTitleText": "检验报告详情",
+    //         "backgroundColor": "#f2f2f2"
+    //       }
+    //     },
+    //     {
+    //       "path": "allDetailList/examPacsDetail/index",
+    //       "style": {
+    //         "navigationBarTitleText": "检查报告详情",
+    //         "backgroundColor": "#f2f2f2"
+    //       }
+    //     }
+    //   ]
+    // }
+  ],
   "preloadRule": {
     "pages/index-user": {
       "network": "all",
       "packages": ["pages-user"]
-    },
-    "pages/index-doctor": {
-      "network": "all",
-      "packages": ["pages-doctor"]
     }
   },
   "globalStyle": {
@@ -841,15 +1235,23 @@
     "backgroundColor": "#F8F8F8",
     "backgroundColorTop": "#F4F5F6",
     "backgroundColorBottom": "#F4F5F6",
-    "usingComponents": {}
+    "usingComponents": {
+      // #ifdef MP-WEIXIN
+      "health-card-users": "plugin://healthCardPlugins/healthCardUsers",
+      "health-card-asst": "plugin://healthCardPlugins/healthCardAsst",
+      "verify-code": "plugin://hello-plugin/verify-code"
+      // #endif
+    }
   },
   "condition": {
     //模式配置，仅开发期间生效
     "current": 0, //当前激活的模式(list 的索引项)
-    "list": [{
-      "name": "", //模式名称
-      "path": "", //启动页面，必选
-      "query": "" //启动参数，在页面的onLoad函数里面得到
-    }]
+    "list": [
+      {
+        "name": "", //模式名称
+        "path": "", //启动页面，必选
+        "query": "" //启动参数，在页面的onLoad函数里面得到
+      }
+    ]
   }
 }

@@ -48,7 +48,7 @@
 
       <view class="oerderMain  box-shadow" v-if="takeType == 1">
         <view class="orderItem flex-between">
-          <view class="title">就诊人</view>
+          <view class="title">健康卡</view>
           <view class="info">
             <view>{{ data.patient.memberName }}</view>
           </view>
@@ -203,7 +203,7 @@
             <view class="title">支付方式</view>
             <view class="info">
               <view>{{
-                data.payType == 'WECHAT_PAY'
+                data.payType == 'ICBC_PAY'
                   ? '微信支付'
                   : data.payType == 'ALI_PAY'
                   ? '支付宝支付'
@@ -365,13 +365,19 @@
                 data.historyMedicalInfo.patientName) ||
                 ''
             }}</text>
-            <text class="doctor">
-              {{ data.historyMedicalInfo && data.historyMedicalInfo.deptName }}
-              {{
+            <view class="doctor">
+              <text>
+                {{
+                  data.historyMedicalInfo && data.historyMedicalInfo.deptName
+                }}
+              </text>
+              <text style="margin-left: 12rpx;">{{
                 data.historyMedicalInfo && data.historyMedicalInfo.doctorName
-              }}
-              {{ data.historyMedicalInfo && data.historyMedicalInfo.title }}
-            </text>
+              }}</text>
+              <text style="margin-left: 12rpx;">{{
+                data.historyMedicalInfo && data.historyMedicalInfo.title
+              }}</text>
+            </view>
             <text
               class="diagnosis"
               v-show="
@@ -436,8 +442,8 @@ import {
 } from '../../common/request/index.js'
 export default {
   onLoad(option) {
-    if (option.orderId) {
-      this.orderId = option.orderId
+    if (option.bizId) {
+      this.orderId = option.bizId
       this.getDetail()
     }
   },
@@ -457,7 +463,9 @@ export default {
       evaluateDescribe: ['不满意', '一般', '满意', '较满意', '非常满意'],
     }
   },
-
+  onShow() {
+    this.getDetail()
+  },
   methods: {
     getTime(date) {
       var time = ''
@@ -710,8 +718,11 @@ export default {
     }
 
     .diagnosis {
-      margin-top: 20rpx;
-      margin-bottom: 18rpx;
+      margin: 20rpx 0 18rpx;
+      width: 100%;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
       font-size: 24rpx;
       color: rgba(102, 102, 102, 1);
     }

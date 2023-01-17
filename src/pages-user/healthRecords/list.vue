@@ -7,7 +7,7 @@
     <view class="headerTop box-shadow">
       <view class="visit flex-between">
         <view class="title">就诊人</view>
-        <view class="name" @click="selecvisit">
+        <view class="name" style="color:#666" @click="selecvisit">
           {{ selectName }}
           <uni-icons
             type="arrowright"
@@ -42,7 +42,7 @@
           <text
             >{{ item.medicalType == 'MZ' ? '门诊记录' : ''
             }}{{ item.medicalType == 'ZY' ? '住院记录' : ''
-            }}{{ item.medicalType == 'TJ' ? '体检报告' : '' }}</text
+            }}<!-- {{ item.medicalType == 'TJ' ? '体检报告' : '' }} --></text
           >
           <text>{{ item.createTime }}</text>
         </view>
@@ -83,7 +83,7 @@
           <text>出院诊断：</text>
           {{ item.outDiagnose || '-' }}
         </view>
-        <view class="flex-between list_d" @click.stop>
+        <!-- <view class="flex-between list_d" @click.stop>
           <view>授权所有接诊医生查看</view>
           <switch
             class="listswitch"
@@ -91,12 +91,12 @@
             @change="switchChange(item, index)"
             :color="themeColor"
           />
-        </view>
+        </view> -->
         <view class="list_e" v-if="item.type == 'outer'"
           ><text>互联网</text></view
         >
       </view>
-      <uni-load-more v-show="pages > 1" :status="more"></uni-load-more>
+      <uni-load-more v-show="pages > 0" :status="more"></uni-load-more>
     </view>
     <pop-select
       ref="popselect"
@@ -139,10 +139,10 @@ export default {
           name: '住院记录',
           value: 'ZY',
         },
-        {
-          name: '体检报告',
-          value: 'TJ',
-        },
+        // {
+        //   name: '体检报告',
+        //   value: 'TJ',
+        // },
       ],
       themeColor: '#0AB2C1',
       selectActive: [],
@@ -178,6 +178,12 @@ export default {
           checked: item.def,
         }
       })
+      if (this.selectList.length > 0) {
+        //默认选择第一个就诊人
+        this.selectActive = [this.selectList[0]?.value]
+        this.selectName = this.selectList[0]?.name
+        this.selectList[0].checked = true
+      }
       this.getarchiveList()
     },
     // 档案列表
@@ -211,6 +217,15 @@ export default {
         uni.navigateTo({
           url: `/pages-zy/physical/report/detail?checkupNo=${item.visitNo}&patientId=${item.memberId}`,
         })
+      }
+      if (item.medicalType == 'ZY') {
+        uni.navigateTo({
+          url: `/pages-zy/hospRecords/detail?inSno=${item.inSno}&times=${
+            item.visitNo.match(/_(\S*)/)[1]
+          }&beginTime=${item.admitDate}&endTime=${item.dischargeDate}&cardNo=${
+            item.cardNo
+          }`,
+        })
       } else {
         uni.navigateTo({
           url: '/pages-user/healthRecords/detail?id=' + item.id,
@@ -221,6 +236,7 @@ export default {
       // })
     },
     radioChangeType(e) {
+      console.log(e)
       this.selectActive = e
     },
     selectSubmit() {
@@ -250,6 +266,7 @@ export default {
     },
 
     tabTap(e) {
+      console.log(e)
       if (this.current !== e) {
         this.current = e
         this.currentNum = 1
@@ -308,10 +325,10 @@ export default {
 
   .name {
     color: #1a1a1a;
-    font-weight: bold;
+    font-weight: normal;
   }
 
-  /deep/.rightIcon {
+  ::v-deep.rightIcon {
     color: #ccc !important;
   }
 }
@@ -322,14 +339,14 @@ export default {
   height: auto;
   padding-top: 26rpx;
 
-  /deep/.segmented-control__item--text {
+  ::v-deep.segmented-control__item--text {
     border-bottom-width: 2px;
     -webkit-box-flex: initial;
     -webkit-flex: none;
     flex: none;
   }
 
-  /deep/.segmented-control__text {
+  ::v-deep.segmented-control__text {
     font-size: 28rpx;
     padding-bottom: 16rpx;
   }
@@ -357,7 +374,7 @@ export default {
       transform: scale(0.6);
       -webkit-transform: scale(0.7);
 
-      /deep/.uni-switch-input:before {
+      ::v-deep.uni-switch-input:before {
         background: #ccc;
       }
     }

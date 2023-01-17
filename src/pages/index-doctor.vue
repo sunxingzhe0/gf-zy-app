@@ -55,15 +55,30 @@ export default {
     // #ifdef MP-WEIXIN
     wx.hideHomeButton()
     // #endif
-
+    //首页状态监听消息数量未读更新
+    uni.$on('onMessage', data => {
+      if (this.active == 0) {
+        this.$refs.home.getSessionMessage()
+      }
+    })
     this.$nextTick(() => {
       if (this.active == 1) {
         this.$refs.user.getorderCount()
+        setTimeout(() => {
+          uni.setNavigationBarTitle({
+            title: this.webSocket.getSocketConnect() || '我的',
+          })
+        }, 1500)
         if (this.isshow) {
           this.$refs.user.isexamineOpen()
         }
       } else {
         this.$refs.home.getSessionMessage()
+        setTimeout(() => {
+          uni.setNavigationBarTitle({
+            title: this.webSocket.getSocketConnect() || '首页',
+          })
+        }, 1500)
       }
     })
   },
@@ -76,7 +91,6 @@ export default {
     }
   },
   methods: {
-
     /**
      * @name 公共点击函数
      * */
@@ -115,6 +129,6 @@ export default {
 <style scoped>
 .fixs {
   position: fixed;
-  z-index: 100;
+  z-index: 50;
 }
 </style>

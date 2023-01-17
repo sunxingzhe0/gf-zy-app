@@ -9,7 +9,7 @@
           class="flex-between top-title"
           @click="() => this.$refs.popselect.open()"
         >
-          <view style="color: #666;">就诊人</view>
+          <view style="color: #666;">健康卡</view>
           <view>
             <text>{{ selectedPatient }}</text>
             <uni-icons type="arrowright" size="14" color="#666"></uni-icons>
@@ -150,6 +150,7 @@ export default {
   },
   data() {
     return {
+      isClick: true,
       tabs: [
         {
           title: '未缴费',
@@ -321,7 +322,12 @@ export default {
         bizType: 'DISPOSAL',
         agreement: true,
       }
+      if (!this.isClick) {
+        return uni.showToast({ title: '请勿重复点击', icon: 'none' })
+      }
+      this.isClick = false
       const order = await submitAppointment(params)
+      this.isClick = true
       if (!order) return
       if (order.isPay) {
         this.getData()

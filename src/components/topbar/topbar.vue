@@ -2,7 +2,13 @@
   <view class="container">
     <slot name="top"></slot>
     <view class="top-bar">
-      <view class="top-bar__item" v-for="item in tabs" :key="item.key" :class="{ active: checked == item.key }" @click="change(item.key)">
+      <view
+        class="top-bar__item"
+        v-for="item in tabs"
+        :key="item.key"
+        :class="{ active: checked == item.key }"
+        @click="change(item)"
+      >
         {{ item.title }} {{ item.num ? `(${item.num})` : '' }}
       </view>
       <slot></slot>
@@ -15,23 +21,29 @@ export default {
   name: 'TopBar',
   props: {
     active: String,
-    tabs: Array
+    tabs: Array,
   },
   data() {
     return {
-      checked: ''
+      checked: '',
     }
   },
   created() {
     this.checked = this.active
   },
   methods: {
-    change(key) {
-      this.checked = key
-      this.$emit('change', key);
-    }
-  }
-};
+    change(item) {
+      if (item.disabled) {
+        return uni.showToast({
+          title: '暂未开通...',
+          icon: 'none',
+        })
+      }
+      this.checked = item.key
+      this.$emit('change', item.key)
+    },
+  },
+}
 </script>
 
 <style lang="scss" scoped>

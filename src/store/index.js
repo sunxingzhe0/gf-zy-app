@@ -18,6 +18,7 @@ import webSocket from '../common/websocket'
 Vue.use(Vuex)
 
 const state = {
+  codePhone: null,
   hasLogin: false,
   loginProvider: '',
   openid: null,
@@ -104,6 +105,9 @@ const mutations = {
   },
   SET_APPOINTMENTCLINICDEPTID(state, data) {
     state.appointmentClinicDeptId = data
+  },
+  setCodePhone(state, data) {
+    state.codePhone = data
   },
 }
 const getters = {
@@ -293,7 +297,15 @@ const actions = {
             })
           }
 
-          const { token, imToken, userId, avatar, clientType } = response
+          const {
+            token,
+            imToken,
+            userId,
+            avatar,
+            clientType,
+            openId,
+          } = response
+          uni.setStorageSync('openId', openId)
           if (!uni.getStorageSync('zyToken')) {
             await actions.getsimLoginZy(
               {
@@ -370,37 +382,47 @@ const actions = {
             })
           }
 
-          const { token, imToken, userId, avatar, clientType, orgId } = response
+          const {
+            token,
+            imToken,
+            userId,
+            avatar,
+            clientType,
+            orgId,
+            openId,
+            deptId,
+          } = response
 
           uni.setStorageSync('token', token)
           uni.setStorageSync('imToken', imToken)
           uni.setStorageSync('userId', userId)
           uni.setStorageSync('clientType', clientType)
           uni.setStorageSync('orgId', orgId)
-
+          uni.setStorageSync('openId', openId)
+          uni.setStorageSync('deptId', deptId)
+          uni.setStorageSync('userInfo', response)
           commit('avatar', avatar || '')
           commit('userInfo', response)
 
-          if (!uni.getStorageSync('zyToken')) {
-            await actions.getsimLoginZy(
-              {
-                commit,
-                state,
-              },
-              {
-                userId,
-                wxNickName: response.username,
-                sex: response.sex,
-                avatar,
-                orgId: response.orgId,
-                openId: response.openId || '123',
-              },
-            )
-          }
-
+          // if (!uni.getStorageSync('zyToken')) {
+          await actions.getsimLoginZy(
+            {
+              commit,
+              state,
+            },
+            {
+              userId,
+              wxNickName: response.username,
+              sex: response.sex,
+              avatar,
+              orgId: response.orgId,
+              openId: response.openId || '123',
+            },
+          )
+          // }
           if (!isto) {
             if (clientType == 'USER') {
-              uni.getUserInfo({
+              uni.getUserProfile({
                 provider: 'weixin',
                 success: async function(infoRes) {
                   console.log('获取用户信息')
@@ -431,11 +453,18 @@ const actions = {
                 uni.setStorageSync('setStatusIndexFunc', 1)
               }
 
-              uni.reLaunch({
-                url: '/pages/index-doctor',
-              })
+              if (clientType == 'XZ_MOBILE') {
+                uni.reLaunch({
+                  url: '/pages-zxs/index',
+                })
+              } else {
+                uni.reLaunch({
+                  url: '/pages/index-doctor',
+                })
+              }
             }
           }
+          websocket.connectSocket() //连接socket
           resolve(response)
         })
         .catch(error => {
@@ -477,19 +506,35 @@ const actions = {
   signOut() {
     webSocket.close()
     const clientType = uni.getStorageSync('clientType')
-
-    return new Promise(resolve => {
-      uni.getStorageInfoSync().keys.forEach(_ => uni.removeStorageSync(_))
+    console.log(clientType, '111')
+    return new Promise((resolve, reject) => {
+      uni.getStorageInfoSync().keys.forEach(_ => {
+        //记住的账号不清除
+        if (!['account', 'password'].includes(_)) {
+          uni.removeStorageSync(_)
+        }
+      })
       uni.setStorageSync('setStatusIndexFunc', 0)
-
-      clientType == 'USER'
-        ? uni.reLaunch({
-            url: '/pages/login/userLogin',
-          })
-        : uni.reLaunch({
-            url: '/pages/login/login',
-          })
-      resolve()
+      uni.reLaunch({
+        url:
+          clientType == 'DOC_MOBILE'
+            ? '/pages/login/login'
+            : '/pages/login/userLogin',
+      })
+      resolve(true)
+    })
+  },
+  //清除缓存
+  handelRemoveStorage() {
+    return new Promise((resolve, reject) => {
+      uni.getStorageInfoSync().keys.forEach(_ => {
+        //记住的账号不清除
+        if (!['account', 'password'].includes(_)) {
+          uni.removeStorageSync(_)
+        }
+      })
+      // uni.setStorageSync('setStatusIndexFunc', 0)
+      resolve(true)
     })
   },
   // 权限
@@ -512,7 +557,7 @@ const actions = {
     uni.setStorageSync('im_msgId', payload.msgId)
   },
   //掌医登录信息
-  getsimLoginZy({ commit, state }, data) {
+  getsimLoginZy(_, data) {
     return new Promise((resolve, reject) => {
       simLoginZy(data)
         .then(response => {

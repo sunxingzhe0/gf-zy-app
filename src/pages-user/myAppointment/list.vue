@@ -93,7 +93,7 @@
             "
             type="mini"
             class="button"
-            @click.stop="cancel(item.orderId)"
+            @click.stop="cancel(item)"
           >
             取消
           </button>
@@ -160,6 +160,7 @@ export default {
   },
   data() {
     return {
+      isClick: true,
       tabs: [
         {
           title: '未缴费',
@@ -264,7 +265,7 @@ export default {
       }
       this.dataList = [
         ...(this.query.currentNum > 1 ? this.dataList : []),
-        ...(await getUserList(params)).map(item =>
+        ...(await getUserList(params)).list.map(item =>
           Object.assign(item, {
             checked: false,
           }),
@@ -329,7 +330,12 @@ export default {
         bizType: 'RESERVE',
         agreement: true,
       }
+      if (!this.isClick) {
+        return uni.showToast({ title: '请勿重复点击', icon: 'none' })
+      }
+      this.isClick = false
       const data = await submitAppointment(params)
+      this.isClick = true
       this.$refs.pay.payTypeC(data.tradeId, data.tradeType)
     },
     del(id) {
@@ -343,12 +349,12 @@ export default {
         },
       })
     },
-    cancel(orderId) {
+    cancel(val) {
       uni.showModal({
         title: '是否确认操作？',
         success: async ({ confirm }) => {
           if (confirm) {
-            const valid = await verifyBack({ orderId })
+            const valid = await verifyBack({ orderId: val.orderId })
 
             if (!valid) {
               uni.showToast({
@@ -357,8 +363,7 @@ export default {
               })
               return
             }
-
-            await refund({ orderId })
+            await refund({ orderId: val.orderId })
             this.refresh()
             uni.showToast({
               icon: 'none',

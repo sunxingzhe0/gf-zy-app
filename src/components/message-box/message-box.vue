@@ -1,14 +1,17 @@
 <template>
   <view>
     <view v-for="(item, index) in messages" :key="index">
+      <view class="timestamp" v-if="isShowTime(index)">
+        {{ formatTime(item.clientTime) }}
+      </view>
       <view
         v-if="newMessage && newMessage.msgId == item.msgId"
         class="text-center"
       >
         <view class="divide-text">以下为新消息</view>
-        <view class="timestamp">
+        <!-- <view class="timestamp">
           {{ FORMATDATE(item.clientTime, 'yyyy-MM-dd hh:mm') }}
-        </view>
+        </view> -->
       </view>
       <view v-if="self(item)" class="flex-end-start self chat-item">
         <view class="content-wrapper">
@@ -143,8 +146,15 @@
           ></image>
         </view>
       </view>
-
-      <view v-else class="flex-start-start left chat-item">
+      <!-- v-else 过滤诊断病例 用户端信息 -->
+      <view
+        v-if="
+          ![messageType.DIAS, 'DIAS', messageType.EMH, 'EMH'].includes(
+            item.childMessageType,
+          ) && !self(item)
+        "
+        class="flex-start-start left chat-item"
+      >
         <view class="avatar-wrapper">
           <image
             class="avatar"
@@ -188,12 +198,17 @@
             向您发起了视频邀请
           </view>
         </template>
+        <!-- 终止诊室的消息 -->
+        <view
+          class="chat-content"
+          v-else-if="item.childMessageType === messageType.SV"
+        >
+          向您发起了服务终止，诊查费将于1-3个工作日内原路退回。
+        </view>
         <view
           class="chat-content"
           v-else-if="
-            (item.childMessageType === messageType.RP ||
-              item.childMessageType == 'RP') &&
-              item.body
+            [messageType.RP, 'RP'].includes(item.childMessageType) && item.body
           "
         >
           <template v-if="item.body.indexOf('SUBMIT') > -1">
@@ -273,6 +288,7 @@
 <script>
 import Illness from './Illness.vue'
 import AuthorizeRecord from './AuthorizeRecord.vue'
+import dayjs from 'dayjs'
 export default {
   name: 'MessageBox',
   components: {
@@ -316,6 +332,7 @@ export default {
             map.set(item.conferenceId, item)
           }
         })
+      console.log(Array.from(map.values()), '消息列表-0-0-')
       return Array.from(map.values())
     },
   },
@@ -332,6 +349,35 @@ export default {
           .filter(item => item.childMessageType == this.messageType.IMAGE)
           .map(item => this.FILE_URL(item.body)),
       })
+    },
+    //是否显示日期
+    isShowTime(index) {
+      //显示规则前一条比后一条大于30s
+      if (index === 0) {
+        return true
+      }
+      if (
+        this.messages[index].clientTime - this.messages[index - 1].clientTime >
+        30 * 1000
+      ) {
+        return true
+      } else {
+        return false
+      }
+    },
+    //格式换日期显示
+    formatTime(time) {
+      //非本年
+      if (dayjs(time).format('YYYY') !== dayjs().format('YYYY')) {
+        return dayjs(time).format('YYYY年MM月DD日 HH:mm')
+      }
+      //今日
+      if (dayjs(time).format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD')) {
+        return dayjs(time).format('HH:mm')
+      } else {
+        //非今日
+        return dayjs(time).format('MM月DD日 HH:mm')
+      }
     },
     setCommonWords(words) {
       const index = this.commonWordsContent.indexOf(words)
@@ -352,7 +398,9 @@ export default {
     viewRP() {
       uni.navigateTo({
         url:
-          this.clientType == 'USER'? `/pages-user/prescription/prescription?orderId=${this.orderId}`: `/pages-doctor/user/prescription/info?orderId=${this.orderId}`,
+          this.clientType == 'USER'
+            ? `/pages-user/prescription/prescription?orderId=${this.orderId}`
+            : `/pages-doctor/user/prescription/info?id=${this.orderId}`,
       })
     },
     // 诊断
@@ -500,8 +548,9 @@ export default {
   width: 280rpx;
   margin: 20rpx auto 0;
   border-radius: 40rpx;
-  background-color: #e6e6e6;
+  // background-color: #e6e6e6;
   font-size: 24rpx;
   color: #666;
+  text-align: center;
 }
 </style>

@@ -12,27 +12,28 @@
     <view class="time-container" v-if="mode == 'time'">
       <view class="flex-between">
         <view class="label">选择时段</view>
-        <view class="num">余号：{{ timeNum }}</view>
+        <view class="num" v-if="istimeNum">余号：{{ timeNum }}</view>
       </view>
-      <view class="flex-start-start time-wrapper">
-        <template v-for="(item, index) in times">
-          <view
+      <scroll-view scroll-y>
+        <view class=" time-wrapper">
+          <text
+            v-for="(item, index) in times"
             class="time-item"
             :class="{
-              active: !item.disabled && activeTimeIndex == index,
-              disabled: item.disabled,
+              active: !isDisabled(item) && activeTimeIndex == index,
+              disabled: isDisabled(item),
             }"
             :key="index"
             @click.stop="
               () => {
-                item.num > 0 && (this.activeTimeIndex = index)
+                ;(item.num > 0 || !istimeNum) && (this.activeTimeIndex = index)
               }
             "
           >
             {{ item.startTime }}~{{ item.endTime }}
-          </view>
-        </template>
-      </view>
+          </text>
+        </view>
+      </scroll-view>
     </view>
     <view class="button-wrapper">
       <view class="button" @click.stop="confirm">
@@ -53,6 +54,7 @@ export default {
     type: String,
     mode: String, //mode=time 精确到时间段选择
     value: Object,
+    istimeNum: Object, //是否需要余数
   },
   data() {
     return {
@@ -68,6 +70,7 @@ export default {
         0
       )
     },
+
     times() {
       return (
         this.dates.find(
@@ -85,6 +88,13 @@ export default {
     this.getDates()
   },
   methods: {
+    isDisabled(item) {
+      return (
+        new Date(
+          `${this.dates?.[this.activeDateIndex]?.date} ${item.endTime}`,
+        ) < new Date()
+      )
+    },
     getDates() {
       const params = {
         id: this.id,
@@ -140,9 +150,11 @@ export default {
   border-top-right-radius: 12rpx;
   background-color: #fff;
 }
+
 .text-center {
   text-align: center;
 }
+
 .title {
   margin-bottom: 12rpx;
   padding: 20rpx 0;
@@ -150,24 +162,31 @@ export default {
   font-size: 32rpx;
   color: #1a1a1a;
 }
+
 .label {
   font-size: 26rpx;
   font-weight: 600;
   color: #1a1a1a;
 }
+
 .num {
   color: $uni-color-primary;
 }
+
 .time-container {
   padding: 20rpx;
 }
+
 .time-wrapper {
-  flex-wrap: wrap;
+  word-break: break-all;
+  max-height: 150px;
 }
+
 .time-item {
-  margin: 12rpx 24rpx 12rpx 0;
+  margin: 12rpx;
   width: 210rpx;
-  line-height: 68rpx;
+  display: inline-block;
+  line-height: 78rpx;
   border-radius: 40rpx;
   text-align: center;
   background-color: #f2f2f2;
@@ -182,9 +201,11 @@ export default {
     color: #ccc;
   }
 }
+
 .button-wrapper {
   padding: 24rpx 0;
 }
+
 .button {
   margin: 0 auto;
   width: 80vw;

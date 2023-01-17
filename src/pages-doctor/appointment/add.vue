@@ -6,13 +6,14 @@
       :order="order"
       :department="department"
       :doctorIndexArr="doctorIndexArr"
+      :docInfo="docInfo"
     />
     <Repeat v-else-if="order" :order="order" :doctorId="doctorId" />
   </view>
 </template>
 <script>
-import Preview from '@/components/clinic-appointment/preview/index'
-import Repeat from '@/components/clinic-appointment/preview/repeat'
+import Preview from '@/pages-doctor/components/clinic-appointment/preview/index'
+import Repeat from '@/pages-doctor/components/clinic-appointment/preview/repeat'
 import { clinicInfo } from '@/common/request/index'
 export default {
   components: {
@@ -26,16 +27,17 @@ export default {
           title: '预约挂号',
           key: 'Preview',
         },
-        {
-          title: '在线复诊',
-          key: 'Repeat',
-        },
+        // {
+        //   title: '在线复诊',
+        //   key: 'Repeat',
+        // },
       ],
       active: 'Preview',
       order: null,
       department: null,
       doctorIndexArr: [],
-      deptId:''
+      deptId: '',
+      docInfo: null,
     }
   },
   computed: {
@@ -47,13 +49,18 @@ export default {
       )
     },
   },
-  onLoad({ orderId, department, doctorIndexArr,deptId }) {
-
+  onLoad({ orderId, department, doctorIndexArr, deptId, docInfo }) {
     this.department = department ? JSON.parse(department) : null
-    this.deptId = deptId?deptId:this.department?this.department.syncCode:null
+    this.docInfo = docInfo ? JSON.parse(docInfo) : null
+    this.deptId = deptId
+      ? deptId
+      : this.department
+      ? this.department.syncCode
+      : null
     this.doctorIndexArr = doctorIndexArr ? doctorIndexArr.split(',') : []
-    clinicInfo({ orderId }).then(data => {this.order = data})
-
+    clinicInfo({ orderId }).then(data => {
+      this.order = data
+    })
   },
 }
 </script>

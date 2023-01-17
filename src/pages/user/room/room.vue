@@ -105,10 +105,12 @@ export default {
         {
           title: '在线复诊',
           key: 'REPEAT_CLINIC',
+          // disabled: true,
         },
         {
           title: '慢病续方',
           key: 'CARRYON_PRESC',
+          // disabled: true,
         },
       ],
       active: 'CONSULT',
@@ -119,20 +121,12 @@ export default {
       interval: null,
     }
   },
-  created() {
-    this.getUserSessionData()
-    this.openMonitor()
-  },
-  beforeDestroy() {
-    this.destroyMonitor()
-  },
   methods: {
     openMonitor() {
       uni.setNavigationBarTitle({
         title: this.webSocket.getSocketConnect() || '我的诊室',
       })
-
-      uni.$on('SocketConnect', this.onSocketConnect)
+      // uni.$on('SocketConnect', this.onSocketConnect)
       uni.$on('onMessage', this.messageHandler)
     },
     destroyMonitor() {
@@ -144,12 +138,12 @@ export default {
         this.interval = null
       }
     },
-    async onPullDown() {
+    onPullDown() {
       this.currentNum = 1
       this.getUserSessionData()
     },
     async onBottom() {
-      this.dataList.length === this.currentNum * this.pageSiz &&
+      this.dataList.length === this.currentNum * this.pageSize &&
         this.currentNum++ &&
         (await this.getUserSessionData())
     },
@@ -160,46 +154,53 @@ export default {
         pageSize: this.pageSize,
         sorted: this.sorted,
       }
+      uni.showLoading()
+      try {
+        const { list } = await userSessionData(params)
+        uni.hideLoading()
+        const listMap =
+          list?.map(item => {
+            Object.assign(item, {
+              unReadMessage: this.webSocket.getUnread(item.sessionId)?.length,
+            })
 
-      const { list } = await userSessionData(params)
-      const listMap =
-        list?.map(item => {
-          Object.assign(item, {
-            unReadMessage: this.webSocket.getUnread(item.sessionId)?.length,
-          })
+            return item.closeTime
+              ? Object.assign(item, {
+                  closeTimestamp: +new Date(item.closeTime.replace(/-/g, '/')),
+                })
+              : item
+          }) || []
 
-          return item.closeTime
-            ? Object.assign(item, {
-                closeTimestamp: +new Date(item.closeTime.replace(/-/g, '/')),
-              })
-            : item
-        }) || []
+        const closeTimestampLength = listMap.filter(_ => _.closeTimestamp)
+          .length
+        if (closeTimestampLength) {
+          this.countDown([
+            ...(this.currentNum > 1 ? this.dataList : []),
+            ...listMap,
+          ])
 
-      const closeTimestampLength = listMap.filter(_ => _.closeTimestamp).length
-      if (closeTimestampLength) {
-        this.countDown([
-          ...(this.currentNum > 1 ? this.dataList : []),
-          ...listMap,
-        ])
+          if (this.interval) return
 
-        if (this.interval) return
-
-        this.interval = setInterval(() => {
-          const closeTimestampLength = this.dataList.filter(
-            _ => _.closeTimestamp,
-          ).length
-          if (closeTimestampLength) {
-            this.countDown()
-          } else {
-            clearInterval(this.interval)
-            this.interval = null
-          }
-        }, 1000)
-      } else {
-        this.dataList = [
-          ...(this.currentNum > 1 ? this.dataList : []),
-          ...listMap,
-        ]
+          this.interval = setInterval(() => {
+            const closeTimestampLength = this.dataList.filter(
+              _ => _.closeTimestamp,
+            ).length
+            if (closeTimestampLength) {
+              this.countDown()
+            } else {
+              clearInterval(this.interval)
+              this.interval = null
+            }
+          }, 1000)
+        } else {
+          this.dataList = [
+            ...(this.currentNum > 1 ? this.dataList : []),
+            ...listMap,
+          ]
+        }
+        uni.hideLoading()
+      } catch (error) {
+        uni.hideLoading()
       }
     },
     countDown(dataList) {
@@ -262,9 +263,11 @@ export default {
           this.webSocket.getUnread(sessionId)?.length || 0
     },
     onSocketConnect() {
-      uni.setNavigationBarTitle({
-        title: this.webSocket.getSocketConnect() || '我的诊室',
-      })
+      if (this.webSocket.getSocketConnect()) {
+        uni.setNavigationBarTitle({
+          title: this.webSocket.getSocketConnect() || '我的诊室',
+        })
+      }
     },
   },
 }

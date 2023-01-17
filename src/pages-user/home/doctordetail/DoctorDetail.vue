@@ -66,10 +66,12 @@
           v-for="(item, index) in doctoretails"
           :key="index"
         >
-          <view class="title">{{ item.name }}</view>
-          <view :class="isShowMore ? 'text' : 'text-clamp text'">{{
-            item.content
-          }}</view>
+          <view class="title" v-if="item.content">{{ item.name }}</view>
+          <view
+            v-if="item.content"
+            :class="isShowMore ? 'text' : 'text-clamp text'"
+            >{{ item.content }}</view
+          >
         </view>
         <view class="showBox" @click="isShowMore = !isShowMore">
           <view class="show" v-if="isShowMore">收起医生详细信息</view>
@@ -89,12 +91,12 @@
       <view class="jiuzhenInfo">
         <!-- 选择就诊人 -->
         <view class="titleBox" @click="showMemberPopup()">
-          <view class="title">选择就诊人</view>
+          <view class="title">选择健康卡</view>
           <view class="changePerson">
             <view
               style="width: 350rpx; color: #cccccc;"
               v-if="!selectMember || !selectMember.name"
-              >请选择就诊人</view
+              >请选择健康卡</view
             >
             <view class="person">{{
               selectMember ? selectMember.name : ''
@@ -133,7 +135,7 @@
             <view class="typeTitle">诊疗类型</view>
             <label
               class="typeItemBox"
-              :class="{ s: type == index }"
+              :class="{ s: type == index, disabled: index > 1 }"
               v-for="(item, index) in typeList"
               :key="index"
               @click="typeC(index)"
@@ -270,6 +272,22 @@
           </view>
         </view>
       </view>
+      <!-- 选择报告 -->
+      <!-- <view
+        class="app-card flex-between"
+        style="margin-top: 20rpx;"
+        @click="$refs.report.open()"
+      >
+        <view style="padding-left: 12rpx;font-size: 32rpx;">
+          <text style="color: #666;">选择报告</text>
+          <text class="value color-primary" style="margin-left: 70rpx;"
+            >已选2，报告编码 | 项目名称…</text
+          >
+        </view>
+        <view>
+          <uni-icons type="arrowright" class="rightIcon" size="12px" />
+        </view>
+      </view> -->
       <!-- 病情描述 -->
       <view class="illDescribe">
         <view class="title">病情描述</view>
@@ -282,7 +300,7 @@
           maxlength="200"
           @input="inputText"
           placeholder-style="color:#cccccc"
-          placeholder="请详细描述您的症状、疾病或身体状况，便于医生精准分析，最少10个字"
+          placeholder="请详细描述您的症状、疾病或身体状况，便于医生精准分析。"
           placeholder-class="placeholder"
         ></textarea>
         <view class="surplus">{{ count }}/200</view>
@@ -335,7 +353,7 @@
     <uni-popup ref="typePopup" type="center" :maskClick="false">
       <view class="type-popup">
         <text class="popup-title" v-if="type == 0">{{
-          onlineConsultingA.title
+          status == 'text' ? onlineConsultingA.title : agreementVideo.title
         }}</text>
         <text class="popup-title" v-if="type == 1">{{
           onlineAppointmentA.title
@@ -347,7 +365,9 @@
           <view
             v-html="
               type == 0
-                ? onlineConsultingA.content
+                ? status == 'text'
+                  ? onlineConsultingA.content
+                  : agreementVideo.content
                 : type == 1
                 ? onlineAppointmentA.content
                 : slowDiseaseA.content
@@ -372,7 +392,7 @@
     <!--选择就诊人-->
     <uni-popup ref="memberPopup" type="center" :maskClick="false">
       <view class="type-popup">
-        <text class="popup-title">就诊人</text>
+        <text class="popup-title">健康卡</text>
         <view class="member-layout">
           <view
             v-for="(item, index) in patientList"
@@ -497,7 +517,7 @@
               <image
                 class="item-img"
                 :src="require('@/assets/internet_title.png')"
-                v-show="active == 0"
+                v-show="active == 10"
               ></image>
               <view class="item-time">
                 <text>{{
@@ -525,10 +545,10 @@
                   <text style="color: #666666;">初步诊断：</text>
                   <text>{{ item.diagnose || '' }}</text>
                 </view>
-                <view class="item-content">
+                <!-- <view class="item-content">
                   <text style="color: #666666;">治疗意见：</text>
                   <text>{{ item.disposeAdvise || '' }}</text>
-                </view>
+                </view> -->
               </template>
 
               <!-- 住院记录 -->
@@ -570,14 +590,19 @@
         <view class="record-confirm" @click="recordConfirm">确定</view>
       </view>
     </uni-popup>
+
+    <!-- 选择报告 -->
+    <!-- <report ref="report" :patientCard="selectMember.patientCard || ''" @submit="selectReport" /> -->
   </view>
 </template>
 <script>
-import uniRate from '@/components/uni-rate/uni-rate.vue'
+import uniRate from '@/pages-user/components/uni-rate/uni-rate.vue'
 import evanCheckBox from '@/components/evan-checkbox/evan-checkbox.vue'
 import uniPopup from '@/components/uni-popup/uni-popup.vue'
 import uniPopupMessage from '@/components/uni-popup/uni-popup-message.vue'
 import uniPopupDialog from '@/components/uni-popup/uni-popup-dialog.vue'
+import report from './report.vue'
+import dayjs from 'dayjs'
 import {
   doctorIntro,
   chooseOrderTime,
@@ -589,6 +614,8 @@ import {
   userHistoryRp,
   upload,
   addBrowseNum,
+  userQueue,
+  validateExistClinic,
 } from '@/common/request/index.js'
 export default {
   components: {
@@ -597,9 +624,12 @@ export default {
     uniPopup,
     uniPopupMessage,
     uniPopupDialog,
+    report,
   },
   data() {
     return {
+      status: 'text',
+      orderId: '',
       doctorId: '',
       bizIntrShow: true,
       showExpandButton: false,
@@ -635,10 +665,10 @@ export default {
       uploadImags: [], //上传图片
       payState: true, //订购按钮状态
       tabs: [
-        {
-          title: '在线就诊记录',
-          key: 0,
-        },
+        // {
+        //   title: '在线就诊记录',
+        //   key: 0,
+        // },
         {
           title: '门诊记录',
           key: 1,
@@ -647,10 +677,10 @@ export default {
           title: '住院记录',
           key: 2,
         },
-        {
-          title: '体检报告',
-          key: 3,
-        },
+        // {
+        //   title: '体检报告',
+        //   key: 3,
+        // },
       ],
       active: 0, //就诊记录类型选择
       recordS: null, //就诊记录选择（item的id 临时选中表示）
@@ -678,10 +708,10 @@ export default {
           name: '执业范围',
           content: '',
         },
-        {
-          name: '执业证号',
-          content: '',
-        },
+        // {
+        //   name: '执业证号',
+        //   content: '',
+        // },
       ],
       orderTimes: [], //患者可选复诊时间段
       times: [
@@ -710,7 +740,8 @@ export default {
         TJ: [],
       }, //就诊记录
       medicalRecords: false, //当前就诊人是否有就诊记录（无不能购买复诊/续方）
-      onlineConsultingA: {}, //在线咨询须知
+      onlineConsultingA: {}, //在线咨询(图文)须知
+      agreementVideo: {}, //在线咨询(视频)须知
       onlineAppointmentA: {}, //在线复诊须知
       slowDiseaseA: {}, //慢病续方须知
       hospitalServiceA: {}, //互联网医院服务协议
@@ -731,19 +762,10 @@ export default {
     },
   },
   onShow() {
-    var pages = getCurrentPages()
-    var currPage = pages[pages.length - 1] //当前页面
-    if (currPage.data) {
-      let res = currPage.data.memberId //添加成员返回的id
-      if (res) {
-        this.addMemberId = res
-        this.getPatientList()
-      } else {
-        this.addMemberId = ''
-      }
-    }
+    this.getPatientList()
   },
   onLoad(options) {
+    this.status = options.status //text video
     if (options.type) {
       this.optionType = options.type
     }
@@ -843,16 +865,22 @@ export default {
       archiveList({
         memberIds: this.selectMember.memberId,
         bizType: this.typeList[this.type]?.describe ?? '',
+        // startDate: dayjs()
+        //   .subtract(2, 'month')
+        //   .format('YYYY-MM-DD'),
+        // endDate: dayjs().format('YYYY-MM-DD'),
       }).then(data => {
         if (!data) return
         this.archiveData = data
         this.setRecordList()
         //（没有就诊记录只能购买在线咨询）
         if (
-          !data.OUTER.length &&
+          /*    !data.OUTER.length &&
           !data.MZ.length &&
           !data.ZY.length &&
-          !data.TJ.length
+          !data.TJ.length */
+          !data.MZ.length &&
+          !data.ZY.length
         ) {
           this.medicalRecords = false
           if (this.typeList[this.type].describe != 'CONSULT') {
@@ -905,7 +933,13 @@ export default {
                   this.isPay = true
                 }, 1000)
               } else {
-                this.$refs.pay.payTypeC(data.orderId)
+                this.$refs.pay.payTypeC(
+                  data.tradeType === 'TRADE' ? data.tradeId : data.orderId,
+                  data.tradeType,
+                  data.payFee,
+                  data.orderId,
+                )
+                this.orderId = data.orderId
                 this.isPay = true
               }
             }
@@ -922,7 +956,7 @@ export default {
     },
     //genre协议类型
     getShowAgreement() {
-      for (let i = 4; i <= 7; i++) {
+      for (let i = 4; i <= 9; i++) {
         showAgreement({
           genre: i,
         }).then(data => {
@@ -935,6 +969,8 @@ export default {
             this.onlineAppointmentA = data
           } else if (i == 7) {
             this.slowDiseaseA = data
+          } else if (i == 9) {
+            this.agreementVideo = data
           }
         })
       }
@@ -943,13 +979,14 @@ export default {
       patientList().then(data => {
         if (data) {
           this.patientList = data
-          this.selectMember = this.patientList.find(item => {
-            if (this.addMemberId) {
-              return this.addMemberId == item.memberId
-            } else {
-              return item.def == true
-            }
-          })
+          this.selectMember =
+            this.patientList.find(item => {
+              if (this.addMemberId) {
+                return this.addMemberId == item.memberId
+              } else {
+                return item.def == true
+              }
+            }) || data[0]
           if (this.selectMember) {
             this.getArchiveList()
           }
@@ -1044,18 +1081,26 @@ export default {
      *根据类型设置记录列表
      */
     setRecordList() {
+      // switch (this.active) {
+      //   case 0:
+      //     this.recordListBytype = this.archiveData.OUTER
+      //     break
+      //   case 1:
+      //     this.recordListBytype = this.archiveData.MZ
+      //     break
+      //   case 2:
+      //     this.recordListBytype = this.archiveData.ZY
+      //     break
+      //   case 3:
+      //     this.recordListBytype = this.archiveData.TJ
+      //     break
+      // }
       switch (this.active) {
         case 0:
-          this.recordListBytype = this.archiveData.OUTER
-          break
-        case 1:
           this.recordListBytype = this.archiveData.MZ
           break
-        case 2:
+        case 1:
           this.recordListBytype = this.archiveData.ZY
-          break
-        case 3:
-          this.recordListBytype = this.archiveData.TJ
           break
       }
     },
@@ -1121,6 +1166,7 @@ export default {
       }, 1000)
     },
     typeC(index) {
+      if (index > 1) return
       this.type = index
       this.addBrowse()
       this.defaultBusinessS()
@@ -1272,13 +1318,13 @@ export default {
     recordsChange(evt) {
       this.recordS = evt.target.value
     },
-    payC() {
+    async payC() {
       if (!this.payState) {
         return
       }
       //必填：协议 就诊人 诊疗类型
       if (!this.selectMember) {
-        this.showToast('请选择就诊人!')
+        this.showToast('请选择健康卡!')
         return
       }
       if (
@@ -1314,14 +1360,71 @@ export default {
           }
           break
       }
-      if (this.desc.length < 10) {
-        this.showToast('请填入10个字符以上的病情描述!')
+      // if (this.desc.length < 10) {
+      //   this.showToast('请填入10个字符以上的病情描述!')
+      //   return
+      // }
+      if (!this.desc.length) {
+        this.showToast('请填入病情描述!')
         return
       }
       if (!this.confirmChecked) {
         this.showToast('请先同意《互联网医院服务协议》!')
         return
       }
+
+      //验证是否可订购服务--------------------
+      const isPayStatus = await validateExistClinic({
+        bizType: this.typeList[this.type].describe,
+        patientId: this.selectMember.patientId,
+      })
+      if (isPayStatus) {
+        //true表示当前就诊人有预约或者就诊中的业务诊室
+        return uni.showModal({
+          title: '系统提示',
+          content: '您已购买了在线咨询业务，不能重复购买。',
+          confirmColor: '#0AB2C1',
+          showCancel: false,
+          success: ({ confirm }) => {},
+        })
+      }
+
+      /* 当前队列信息提示--------------------------- */
+      const queueInfo = await userQueue({ doctorId: this.doctorId })
+      if (queueInfo.queueNum > 0) {
+        //等待时长
+        const timeHours = Math.floor(queueInfo.expectPeriod / 3600)
+        const timeMin = Math.floor((queueInfo.expectPeriod / 60) % 60)
+        const timeSs = queueInfo.expectPeriod % 60
+        return uni.showModal({
+          title: '系统提示',
+          content: `当前排队人数有${queueInfo.queueNum}人 ，预计等候时间 ${timeHours} 小时 ${timeMin} 分，是否确认购买？`,
+          confirmColor: '#0AB2C1',
+          success: ({ confirm }) => {
+            if (!confirm) return
+            //在线咨询的0元跳过拉起支付
+            if (
+              this.typeList[this.type].describe === 'CONSULT' &&
+              this.typeList[this.type].business[this.businessS].content ===
+                '0.00'
+            ) {
+              this.orderPay()
+              return
+            }
+
+            this.$refs.pay.show()
+          },
+        })
+      }
+      //在线咨询的0元跳过拉起支付
+      if (
+        this.typeList[this.type].describe === 'CONSULT' &&
+        this.typeList[this.type].business[this.businessS].content === '0.00'
+      ) {
+        this.orderPay()
+        return
+      }
+
       this.$refs.pay.show()
     },
     showToast(message) {
@@ -1356,13 +1459,13 @@ export default {
       //支付成功 跳转到诊室
       setTimeout(() => {
         uni.redirectTo({
-          url: '../../chat/chat?orderId=' + value,
+          url: '../../chat/chat?orderId=' + this.orderId,
         })
       }, 1000)
     },
     payCancel(value) {
       uni.redirectTo({
-        url: '../../serviceOrder/detail?orderId=' + value,
+        url: '../../serviceOrder/detail?bizId=' + value,
       })
     },
     addBrowse() {
@@ -1370,6 +1473,9 @@ export default {
         doctorId: this.doctorId,
         bizType: this.typeList[this.type].describe,
       })
+    },
+    selectReport(value) {
+      console.log(value)
     },
   },
 }
@@ -1390,7 +1496,7 @@ export default {
   position: relative;
   top: -40rpx;
   .docinfoCard {
-    height: 335upx;
+    height: 270upx;
     padding: 30upx;
     background: #fff;
     box-shadow: 0px 5upx 20upx 0upx rgba(0, 0, 0, 0.15);
@@ -1536,7 +1642,7 @@ export default {
     box-sizing: border-box;
     .detailItem {
       padding-bottom: 40upx;
-      margin-bottom: 40upx;
+      margin-bottom: 30upx;
       border-bottom: 1upx solid #e6e6e6;
       .title {
         width: 100%;
@@ -1726,6 +1832,24 @@ export default {
             display: -webkit-box;
             word-break: break-all;
           }
+        }
+      }
+      .disabled {
+        -webkit-filter: grayscale(100%);
+        -moz-filter: grayscale(100%);
+        -ms-filter: grayscale(100%);
+        -o-filter: grayscale(100%);
+        filter: grayscale(100%);
+        filter: gray;
+        filter: progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);
+        .itemTitle {
+          color: #ccc !important;
+        }
+        .title {
+          color: #ccc !important;
+        }
+        .content {
+          color: #ccc !important;
         }
       }
       .confirm {
@@ -2237,7 +2361,7 @@ export default {
     border-top: 1rpx solid rgba(230, 230, 230, 1);
   }
 }
-/deep/.picker-view {
+::v-deep.picker-view {
   width: 98%;
   height: 500rpx;
   align-items: center;
@@ -2253,13 +2377,13 @@ export default {
   flex-direction: row;
   padding: 0rpx 28rpx;
 }
-/deep/ .container.data-v-53ef67cf {
+::v-deep .container.data-v-53ef67cf {
   width: 640rpx;
   border-radius: 0rpx;
   position: relative;
   box-shadow: 0px 0px 0px 0px #ffffff;
 }
-/deep/.top-bar.data-v-53ef67cf {
+::v-deep.top-bar.data-v-53ef67cf {
   box-shadow: 0px 0px 0px 0px #ffffff;
 }
 .bizintr {
@@ -2275,5 +2399,8 @@ export default {
 }
 .transform-reverse {
   transform: rotate(180deg);
+}
+.color-primary {
+  color: $uni-color-primary;
 }
 </style>

@@ -33,10 +33,10 @@
     <view class="treatment-item-body">
       <view class="body-left">
         <view class="treate-name">
-          {{ item.name }}{{ item.dictDisList[0].specimenPartName }}
+          {{ item.name || '' }}{{ item.dictDisList[0].specimenPartName || '' }}
         </view>
         <view class="treat-depart">
-          执行科室：{{ item.dictDisList[0].execDeptName }}
+          执行科室：{{ item.dictDisList[0].execDeptName || '-' }}
         </view>
         <view class="treat-money"> 费用：￥{{ item.price }} </view>
       </view>

@@ -4,43 +4,51 @@
       <view class="title-img"></view>
       <text class="title-name">{{ title_name }}</text>
     </view>
-    <view
-      id="content"
-      class="fload"
-      :class="isFload ? '' : 'show'"
-      v-html="`<span>${content}</span>`"
-    >
+    <view id="content">
+      <rich-text
+        class="content"
+        :class="{ hide: showExchangeButton, show: !isFload }"
+        :nodes="nodes"
+      />
     </view>
-    <view @click="fload" class="operation" v-if="showExchangeButton">
+    <view class="operation" v-if="showExchangeButton" @click="fload">
       <text id="test">{{ isFload ? '展开' : '收起' }}</text>
-      <image :src="isFload ? showImg : hideImg"></image>
+      <image
+        :src="
+          isFload ? require('@/assets/show.png') : require('@/assets/hide.png')
+        "
+      ></image>
     </view>
   </view>
 </template>
 
 <script>
+import parseHtml from './parseHtml'
 export default {
   props: {
     title_name: String,
     content: String,
+    isOpen:Number
   },
   data() {
     return {
       isFload: true,
-      hideImg: require('@/assets/hide.png'),
-      showImg: require('@/assets/show.png'),
-
       // 是否显示展开收起按钮
-      showExchangeButton: true,
-      //1行高度
-      lin_height: 0,
+      showExchangeButton: false,
     }
   },
-
+  created(){
+    this.isOpen&&(this.isFload=false)
+  },
   mounted() {
     this.$nextTick(this.init)
-  },
 
+  },
+  computed: {
+    nodes() {
+      return parseHtml(this.content)
+    },
+  },
   methods: {
     showTotalIntro() {
       this.showTotal = !this.showTotal
@@ -54,22 +62,9 @@ export default {
       uni
         .createSelectorQuery()
         .in(this)
-        .select('#test')
-        .boundingClientRect(data => {
-          if (data) {
-            this.lin_height = data.height
-          }
-        })
-        .exec()
-      uni
-        .createSelectorQuery()
-        .in(this)
         .select('#content')
         .boundingClientRect(data => {
-          this.showExchangeButton = false
-          if (data.height > this.lin_height * 2) {
-            this.showExchangeButton = true
-          }
+          this.showExchangeButton = data.height > 90
         })
         .exec()
     },
@@ -77,7 +72,7 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="less" scoped>
 .hospital-title {
   display: flex;
   align-items: center;
@@ -105,20 +100,18 @@ export default {
   border-radius: 20rpx;
 }
 
-.fload {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  /* 要显示多少行就改变line-clamp的数据,此处折叠起来显示一行*/
-  -webkit-line-clamp: 4;
+.content {
+  display: block;
   overflow: hidden;
-  text-overflow: ellipsis;
-  word-break: break-all;
   font-size: 26rpx;
   color: rgba(102, 102, 102, 1);
-}
 
-.show {
-  display: block;
+  &.hide {
+    height: 90px;
+  }
+  &.show {
+    height: auto;
+  }
 }
 
 .operation {

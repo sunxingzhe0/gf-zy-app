@@ -3,48 +3,119 @@
     <view class="headerTop">
       <image
         class="bg"
-        :src="FILE_URL_BUILT_IN('headerBg.png')"
+        :src="FILE_URL_BUILT_IN('meBg.png')"
         mode="scaleToFill"
       ></image>
+      <!-- <image class="bg" :src="bgUrl" mode="scaleToFill"></image> -->
       <view class="headerMain">
         <view class="flex-start-center">
-          <image
+          <default-img
+            style="
+                width: 110rpx;
+                height: 110rpx;
+                border-radius: 50%;
+                overflow: hidden;
+                margin-right:10rpx;
+              "
+            :isPreview="false"
+            :url="FILE_URL(avatar)"
+          ></default-img>
+          <!-- <image
             :src="
               avatar
                 ? FILE_URL(avatar)
                 : require('@/assets/user/user_d_head.png')
             "
-
-          ></image>
-          <view class="headerInfo flex_1">
-            <view class="name">{{
-              userInfo.username || '-'
-            }}</view>
-            <view class="phone flex-between">
+          ></image> -->
+          <view class="headerInfo flex_1 flex-between">
+            <!-- <view class="name">{{ userInfo.username || '-' }}</view> -->
+            <view class="phone-name" style="margin-left: 5px">
+              <view class="name">{{ userInfo.username || '-' }}</view>
               <view>{{ util.noPassByMobile(userInfo.phone) }}</view>
-              <view class="changerole" @click.stop="changeRole">
-                员工通道
+            </view>
+
+            <view class="header-btns">
+              <view
+                class="changerole"
+                style="margin-bottom:10px"
+                @click="goto('/pages-user/message/list')"
+              >
+                <text
+                  class="iconfont icon-tongzhi"
+                  style="margin-right: 8px;"
+                ></text>
+                消息
+                <view class="num" v-if="message > 0">{{
+                  message > 99 ? '99+' : message
+                }}</view>
+              </view>
+              <view class="changerole" @click.stop="toChangeRole">
+                <uni-icons
+                  type="loop"
+                  color="#0AB2C1"
+                  style="margin-top: 6rpx;margin-right: 17rpx;font-weight: bold;"
+                  :size="16"
+                ></uni-icons
+                >员工
               </view>
             </view>
           </view>
         </view>
-        <view class="notice" @click="goto('/pages-user/message/list')">
+        <!-- <view class="notice" @click="goto('/pages-user/message/list')">
           <text class="iconfont icon-tongzhi"></text>
           <view class="num" v-if="message > 0">{{
             message > 99 ? '99+' : message
           }}</view>
-        </view>
+        </view> -->
       </view>
     </view>
     <view class="pageWrap">
       <view
         class="box-shadow pageItem"
         @click="goto('/pages-user/patientManagement/add')"
+        v-if="perList.length == 0"
       >
         <view class="uni-center card">
           <text class="iconfont icon-zengjia"></text>
-          <view class="title">新增就诊人</view>
-          <view class="tip">新增就诊人，可享受医院一对一的在线服务</view>
+          <view class="title">添加健康卡</view>
+        </view>
+      </view>
+      <view class="card-swiper-box" v-if="perList.length > 0">
+        <view class="card-swiper-content">
+          <swiper
+            @change="changeCard"
+            class="card-swiper"
+            indicator-dots="true"
+            indicator-color="#ccc"
+            indicator-active-color="#0AB2C1"
+            circular="true"
+            previous-margin="5px"
+            next-margin="7px"
+          >
+            <swiper-item
+              class="swiper-item"
+              v-for="(val, index) in perList"
+              :key="index"
+            >
+              <view
+                class="swiper-perCard flex-between"
+                @click="
+                  navigateTo(
+                    `/pages-user/patientManagement/detail?id=${val.memberId}`,
+                  )
+                "
+              >
+                <view>
+                  <view class="perName">{{ val.name }}</view>
+                  <view class="perNo">卡号：{{ val.patientCard }}</view>
+                </view>
+                <image
+                  class="erweima"
+                  :src="require('@/assets/user/erweima.png')"
+                ></image>
+              </view>
+            </swiper-item>
+          </swiper>
         </view>
       </view>
       <view class="linkList box-shadow">
@@ -66,25 +137,35 @@
       :list="roleList"
       @change="radioChangeType"
     ></pop-select>
+    <view class="version">{{ version }}</view>
   </view>
 </template>
 <script>
 import util from '@/common/util'
 import popSelect from '@/components/pop-select'
-import { changeRole, checkValid } from '@/common/request/index'
+import {
+  changeRole,
+  checkValid,
+  patientList,
+  autoSyncUserCard,
+} from '@/common/request/index'
+import { editPatientInfo } from '@/common/request/userCenter'
 export default {
   components: {
     popSelect,
   },
   data() {
     return {
+      version: '',
+      // bgUrl: require('@/assets/meBg.png'),
+      perList: [],
       num: 0,
       util: util,
       roleId: this.$store.state.userInfo.roleId,
       headerUrl: '',
       list: [
         {
-          title: '就诊人管理',
+          title: '健康卡管理',
           icon: require('@/assets/user/userIcon1.png'),
           url: '/pages-user/patientManagement/list',
         },
@@ -106,7 +187,7 @@ export default {
         // {
         //   title: '在线医嘱',
         //   icon: require('@/assets/user/userIcon12.png'),
-        //   url: '/pages-user/doctorAdvice/list'
+        //   url: '/pages-user/doctorAdvice/list',
         // },
         {
           title: '我的预约',
@@ -138,6 +219,11 @@ export default {
           icon: require('@/assets/user/userIcon7.png'),
           url: '/pages-user/address/list',
         },
+        {
+          title: '意见反馈',
+          icon: require('@/assets/user/userIcon12.png'),
+          url: '/pages-zy/feedBack/index',
+        },
         // {
         //   title: '账号管理',
         //   icon: require('@/assets/user/userIcon10.png'),
@@ -148,7 +234,6 @@ export default {
   },
   computed: {
     userInfo: function() {
-      console.log(this.$store.state.userInfo);
       return this.$store.state.userInfo
     },
     roleList: function() {
@@ -162,35 +247,73 @@ export default {
     },
   },
   created() {
+    const accountInfo = wx.getAccountInfoSync() //获取小程序版本号
+    console.log(accountInfo, '账号信息')
+    this.version = accountInfo.miniProgram.version
+      ? 'v' + accountInfo.miniProgram.version
+      : ''
+    console.log(this.$store.state)
     uni.setNavigationBarTitle({
       title: '我的',
     })
     this.$store.dispatch('getMessge')
+    this.getpatientList()
+  },
+  mounted() {
+    uni.$on('updateCard', () => {
+      this.getpatientList()
+      this.$forceUpdate()
+    })
   },
   methods: {
-    changeRole() {
+    //自动更新就诊卡
+    async handleAutoSyncUserCard(memberId) {
+      await autoSyncUserCard({ memberId })
+    },
+    //变更默认选项
+    async changeCard(e) {
+      uni.showLoading()
+      const params = this.perList[e.detail.current]
+      params.def = true
+      await editPatientInfo(params)
+      this.handleAutoSyncUserCard(params.memberId)
+      uni.hideLoading()
+    },
+    navigateTo(url) {
+      uni.navigateTo({
+        url,
+      })
+    },
+    toChangeRole() {
       // if (this.userInfo.roleList.length > 1) {
       //   this.$refs.popselect.open()
       // }
       uni.setStorageSync('clientType', 'DOC_MOBILE')
       this.$store.dispatch('signOut')
     },
+    // 就诊人
+    async getpatientList() {
+      this.perList = []
+      this.perList = await patientList()
+    },
     getWXUserInfo() {
       let that = this
       uni.login({
         provider: 'weixin',
         success: function(loginRes) {
-          uni.getUserInfo({
-            provider: 'weixin',
+          uni.getUserProfile({
+            desc: 'weixin',
             success: async function(infoRes) {
               console.log(3333)
               that.headerUrl = infoRes.userInfo.avatarUrl
               console.log('获取用户信息')
-              await that.$store.dispatch('encryptedData', {
-                encryptedData: infoRes.encryptedData,
-                iv: infoRes.iv,
-              })
               that.$store.dispatch('loginInfo', true)
+              if (this.userInfo.username === '微信用户') {
+                that.$store.dispatch('encryptedData', {
+                  encryptedData: infoRes.encryptedData,
+                  iv: infoRes.iv,
+                })
+              }
             },
             fail: function(err) {
               console.log(err)
@@ -229,7 +352,7 @@ export default {
 }
 
 .pageWrap {
-  padding: 0 20rpx;
+  // padding: 0 20rpx;
   margin-top: -20rpx;
   position: relative;
   z-index: 4;
@@ -237,7 +360,8 @@ export default {
 
 .pageItem {
   background: #fff;
-  margin-bottom: 20rpx;
+  // margin-bottom: 20rpx;
+  margin: -10px 10px 10px 10px;
 }
 
 .headerTop {
@@ -286,6 +410,8 @@ export default {
         }
       }
 
+      .phone-name {
+      }
       .changerole {
         height: 60rpx;
         line-height: 60rpx;
@@ -299,16 +425,8 @@ export default {
       }
     }
 
-    .notice {
-      position: absolute;
-      right: 0;
-      top: -20rpx;
-
-      text {
-        color: #fff;
-        font-size: 50rpx;
-      }
-
+    .header-btns {
+      position: relative;
       .num {
         width: 38rpx;
         height: 38rpx;
@@ -316,8 +434,8 @@ export default {
         background: #e45b5b;
         color: #fff;
         position: absolute;
-        right: -12rpx;
-        top: -2rpx;
+        left: -15rpx;
+        top: -10rpx;
         line-height: 38rpx;
         text-align: center;
         font-size: 20rpx;
@@ -327,8 +445,7 @@ export default {
 }
 
 .card {
-  padding: 40rpx 20rpx;
-  padding-top: 20rpx;
+  padding: 18rpx 20rpx;
 
   text {
     color: $uni-color-primary;
@@ -351,6 +468,7 @@ export default {
   display: flex;
   justify-content: flex-start;
   flex-wrap: wrap;
+  margin: 0 10px;
   padding: 20rpx 0 20rpx 20rpx;
   background: #fff;
   overflow: hidden;
@@ -370,5 +488,113 @@ export default {
     width: 60rpx;
     height: 60rpx;
   }
+}
+.perCard {
+  padding: 20rpx 30rpx;
+  padding-right: 40rpx;
+  margin: 10px 20rpx;
+  margin-top: -20rpx;
+  z-index: 20;
+  position: relative;
+  border-radius: 20rpx;
+  overflow: hidden;
+  margin-bottom: 10px;
+  .perBg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+
+  > view {
+    position: relative;
+    z-index: 3;
+  }
+
+  .perName {
+    font-size: 30rpx;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .perNo {
+    font-size: 24rpx;
+    color: #fff;
+  }
+
+  .erweima {
+    width: 40rpx;
+    height: 40rpx;
+    position: relative;
+    z-index: 3;
+  }
+}
+.card-swiper-box {
+  // margin: 0 10px;
+  height: 80px;
+  position: relative;
+  .card-swiper-content {
+    width: 100%;
+    position: absolute;
+    top: -10px;
+    left: 0;
+    z-index: 999;
+  }
+  .card-swiper {
+    width: 100%;
+    height: 90px;
+    .swiper-item {
+      height: 68px !important;
+    }
+    .swiper-perCard {
+      margin: 0 2px;
+      width: 100%;
+      height: 100%;
+      padding: 0 15px;
+      box-sizing: border-box;
+      border-radius: 10px;
+      background-image: url('@/assets/user/perBg.png');
+      background-size: cover;
+      .perBg {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+      }
+
+      > view {
+        position: relative;
+        z-index: 3;
+      }
+
+      .perName {
+        font-size: 30rpx;
+        color: #fff;
+        font-weight: 600;
+      }
+
+      .perNo {
+        font-size: 24rpx;
+        color: #fff;
+      }
+
+      .erweima {
+        width: 40rpx;
+        height: 40rpx;
+        // position: relative;
+        z-index: 3;
+      }
+    }
+  }
+}
+.version {
+  position: fixed;
+  bottom: 100rpx;
+  width: 100%;
+  left: 0;
+  text-align: center;
+  color: #cecece;
 }
 </style>

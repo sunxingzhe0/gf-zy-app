@@ -68,6 +68,11 @@ const toolArray = [
     title: '诊间预约',
     event: 'appointment',
   },
+  {
+    image: require('@/assets/chuzhi@2x.png'),
+    title: '同步病历',
+    event: 'syncHisDisease',
+  },
 ]
 export default {
   props: {
@@ -92,7 +97,7 @@ export default {
         this.chatTools = [...toolArray]
 
         if (this.order.bizType == 'CONSULT') {
-          this.chatTools.splice(3, 3)
+          this.chatTools.splice(3)
         }
         if (
           !this.chatTools.filter(item => item.event == 'video').length &&

@@ -37,7 +37,7 @@
           </view>
 
           <view class="">{{
-            item.bizType ? item.appointmentPeriod : item.createTime
+            item.bizType ? item.createTime : item.createTime
           }}</view>
           <view v-if="item.countDown" style="color: #e45c5c;"
             >距离{{

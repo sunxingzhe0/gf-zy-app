@@ -93,8 +93,9 @@ export default {
       uni.showLoading({
         title: '加载中',
       })
+      uni.showLoading()
       findEvaluateList({ userId: uni.getStorageSync('userId') })
-        .then(data => (this.list = data))
+        .then(uni.hideLoading()(data => (this.list = data)))
         .finally(() => uni.hideLoading())
     },
     goto(id) {

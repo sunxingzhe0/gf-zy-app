@@ -9,8 +9,8 @@ import request from '@/common/request/request.js'
  * @param {string} itemType		是	费用类别
  * @returns {Promise<object>} res
  */
-export function findBill(params){
-  return request("zyApi/api/v1/zyList/findBill", params, "GET")
+export function findBill(params) {
+  return request('zyApi/api/v1/zyList/findBill', params, 'GET')
 }
 
 /**
@@ -23,8 +23,8 @@ export function findBill(params){
  * @returns {Promise<object>} res
  */
 
-export function findZyList(params){
-  return request("zyApi/api/v1/zyList/findZyList", params, "GET")
+export function findZyList(params) {
+  return request('zyApi/api/v1/zyList/findZyList', params, 'GET')
 }
 
 /**
@@ -36,8 +36,8 @@ export function findZyList(params){
  * @param {string} payCard		银行卡号：银联支付是必传
  * @returns {Promise<object>} res
  */
-export function rechargeIh(params){
-  return request("zyApi/api/v1/order/rechargeIh", params, "POST")
+export function rechargeIh(params) {
+  return request('zyApi/api/v1/order/rechargeIh', params, 'POST')
 }
 
 /**
@@ -45,8 +45,8 @@ export function rechargeIh(params){
  * @param {string} patientId		是	就诊人ID
  * @returns {Promise<object>} res
  */
-export function moneyBay(params){
-  return request("zyApi/api/v1/order/moneyBay", params, "GET")
+export function moneyBay(params) {
+  return request('zyApi/api/v1/order/moneyBay', params, 'GET')
 }
 
 /**
@@ -56,8 +56,8 @@ export function moneyBay(params){
  * @returns {Promise<object>} res
  */
 
-export function zyRecord(params){
-  return request("zyApi/api/v1/order/zyRecord", params, "GET")
+export function zyRecord(params) {
+  return request('zyApi/api/v1/order/zyRecord', params, 'GET')
 }
 
 /**
@@ -67,8 +67,8 @@ export function zyRecord(params){
  * @param {dept} endTime	科室
  * @returns {Promise<object>} res
  */
-export function userSearchRota(params){
-  return request("zyApi/api/v1/rota/userSearchRota", params, "GET")
+export function userSearchRota(params) {
+  return request('zyApi/api/v1/rota/userSearchRota', params, 'GET')
 }
 
 /**
@@ -76,7 +76,14 @@ export function userSearchRota(params){
  * @param {string} id		医生id
  * @returns {Promise<object>} res
  */
-export function doctorIntro(params){
-  return request("zyApi/api/v1/employee/doctorIntro", params, "GET")
+export function doctorIntro(params) {
+  return request('zyApi/api/v1/employee/doctorIntro', params, 'GET')
 }
 
+/**
+ * 费用类别列表
+ * @param {string} patientId		就诊人id
+ */
+export function getFeeType(params) {
+  return request('zyApi/api/v1/zyList/getFeeType', params, 'GET')
+}

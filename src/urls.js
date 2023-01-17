@@ -1,42 +1,30 @@
 // 开发环境
 const dev = 'wxapp.chuntaoyisheng.com/'
 // 测试环境
-const test = 'miapp.chuntaoyisheng.com/';
-// 海南医院环境
-const show = 'hlw.guanfangyiliao.com/'
+const test = 'miapp.chuntaoyisheng.com/'
 
-const wss_dev = 'wss://wxapp.chuntaoyisheng.com/wx_chat'
-const wss_test = 'wss://miapp.chuntaoyisheng.com/wx_chat';
-const wss_show = 'wss://hlw.guanfangyiliao.com/wx_chat'
+// 精卫中心开发环境
+const jw = 'test.cqsjwzx.com/'
+// 精卫中心测试环境与试用环境
+const jw_test = 'm.cqsjwzx.com/'
+// 精卫生产环境
+const jw_production = 'hlw.cqsjwzx.com/'
 
-// //#ifdef H5
-// //测试的时候使用 预防 uni.uploadFile 上传图片时代理不了的问题
-// const dev = '192.168.8.42:10002/mi';
-// //#endif
+const wss_dev = `wss://${dev}wx_chat`
+const wss_test = `wss://${test}wx_chat`
 
-// //#ifndef H5
-// const dev = 'demo.chuntaoyisheng.com:10002/mi';
-// //#endif
+//精卫开发环境socket地址
+const wss_jw = `wss://${jw}wx_chat`
+//精卫测试环境socket地址
+const wss_jw_test = `wss://${jw_test}wx_chat`
+// 精卫生产环境socket地址
+const wss_production = `wss://${jw_production}wx_chat`
 
-// const dev = '192.168.8.63:11031/'
+const ENV_HOST = process.env.NODE_ENV === 'development' ? test : jw_production
 
-let ENV_HOST = process.env.NODE_ENV === 'development' ? dev : test
-
-//用于打包后运行在手机端
-//#ifdef H5
-ENV_HOST = dev
-//#endif
 export const host = `https://${ENV_HOST}`
-
-//#ifdef MP-WEIXIN
 export const webSocketUrl =
-  process.env.NODE_ENV === 'development' ? wss_dev : wss_test
-//#endif
-
-//用于测试环境打包后运行在手机端
-//#ifdef H5
-export const webSocketUrl = wss_dev
-//#endif
+  process.env.NODE_ENV === 'development' ? wss_test : wss_production
 
 export function downLoadUrl(fileId) {
   const token = uni.getStorageSync('token')

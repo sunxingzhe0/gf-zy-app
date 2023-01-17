@@ -13,7 +13,8 @@ export default {
   },
   computed: {
     list() {
-      return this.chooseList.map(_ => ({ value: _.methodName }))
+      console.log(this.chooseList, '方法')
+      return this.chooseList.map(_ => ({ value: _.methodName || '暂无' }))
     },
   },
   methods: {

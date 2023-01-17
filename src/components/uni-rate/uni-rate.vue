@@ -46,7 +46,6 @@
 		</view>
 	</view>
 </template>
-
 <script>
 	// #ifdef APP-NVUE
 	const dom = uni.requireNativePlugin('dom');
@@ -70,7 +69,6 @@
 	 * @property {Boolean} 	touchable = [true|false] 	是否支持滑动手势，默认为 true
 	 * @event {Function} change 						uniRate 的 value 改变时触发事件，e={value:Number}
 	 */
-
 	export default {
 		components: {
 			uniIcons
@@ -208,7 +206,6 @@
 				const index = parseInt(rateMoveRange / (this.size + this.margin))
 				const range = parseInt(rateMoveRange - ((this.size + this.margin) * index))
 				let value = 0
-
 				if (this.allowHalf) {
 					if (range > (this.size / 2)) {
 						value = index + 1
@@ -218,7 +215,6 @@
 				} else {
 					value = index + 1
 				}
-
 				value = Math.max(0.5, Math.min(value, this.max))
 				if (this.valueSync !== value) {
 					this.valueSync = value
@@ -226,12 +222,10 @@
 				}
 				// const rateCount = parseInt(rateMoveRange / (this.size / 2)) + 1
 			},
-
 			/**
 			 * 触发动态修改
 			 */
 			_onChange() {
-
 				this.$emit("input", this.valueSync);
 				this.$emit("change", {
 					value: this.valueSync
@@ -264,7 +258,6 @@
 		}
 	};
 </script>
-
 <style
     lang="scss"
     scoped
@@ -277,13 +270,11 @@
 		font-size: 0;
 		flex-direction: row;
 	}
-
 	.uni-rate__icon {
 		position: relative;
 		line-height: 1;
 		font-size: 0;
 	}
-
 	.uni-rate__icon-on {
 		overflow: hidden;
 		position: absolute;

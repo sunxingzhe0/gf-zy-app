@@ -15,20 +15,21 @@
           class="app-card"
           v-for="(item, index) in dataList"
           :key="item.id"
-          @click="goDetail(item.id)"
+          @click="goDetail(item.id, item.state, item.deptId)"
         >
           <view class="tag red" v-if="item.cancel && item.state == 2"
             >已逾期</view
           >
-          <view class="tag primary" v-else-if="isToday(item.visitDate)">
+          <view class="tag primary" v-else-if="isToday(item)">
             今天
           </view>
-          <view >
-            <view :style="{width:active==1?'200rpx':'152rpx'}">
+          <view>
+            <view :style="{ width: active == 1 ? '200rpx' : '152rpx' }">
               <label @click.stop="() => null">
                 <checkbox
                   :value="item.id"
                   :checked="item.checked"
+                  :disabled="compare(item)"
                   v-if="active == 1"
                   class="checkbox"
                   color="#0ab2c1"
@@ -61,27 +62,43 @@
                 <view class="flex-between">
                   <view class="position">
                     {{
-                item.state == 3
-                  ? `${item.getNoTime}`
-                  : item.state == 5
-                  ? `${item.backTime}`
-                  : item.state == 1 || item.state == 2
-                  ? `${item.state == 2 ? '' : ''}
-                ${item.visitDate} ${item.startTime}~${item.endTime}`
-                  : ''
-              }}
+                      item.state == 3
+                        ? `${item.getNoTime || ''}`
+                        : item.state == 5
+                        ? `${item.backTime || ''}`
+                        : item.state == 1 || item.state == 2
+                        ? `${item.state == 2 ? '' : ''}
+                ${item.visitDate || ''} ${item.startTime}~${item.endTime}`
+                        : ''
+                    }}
                   </view>
                 </view>
                 <view class="position">诊查费：￥{{ item.fee }}</view>
               </view>
             </view>
-
           </view>
           <view class="flex-end-start">
+            <!-- <button
+              v-if="item.deptId === '8323' && active == 2"
+              class="button primary"
+              @click.stop="acidSignIn(item)"
+              type="mini"
+            >
+              签到
+            </button> -->
             <button
               v-if="active == 1"
               type="mini"
               class="button"
+              @click.stop="closeOrder(item)"
+            >
+              关闭
+            </button>
+            <button
+              v-if="active == 1"
+              type="mini"
+              class="button"
+              :class="compare(item) && 'is-disabled'"
               @click.stop="pay(index)"
             >
               支付
@@ -96,10 +113,14 @@
             </button>
             <button
               v-else-if="
-                active == 2 && !isToday(item.visitDate) && !item.cancel
+                active == 2 &&
+                  !isToday(item) &&
+                  !item.cancel &&
+                  item.deptId != 8323
               "
               type="mini"
               class="button"
+              :class="compare(item) && 'is-disabled'"
               @click.stop="cancel(item)"
             >
               取消
@@ -120,7 +141,7 @@
       <view class="heji font30" v-if="alltotal > 0">
         <text class="price">￥{{ alltotal }}</text>
       </view>
-      <view v-if="checkedList.length > 0" class="payBtn" @click="openPay">
+      <view v-if="checkedList.length > 0" class="payBtn" @click="openPay(1)">
         支付
       </view>
       <view v-else class="payBtn disabled">
@@ -144,9 +165,11 @@ import {
   getUserList,
   submitAppointment,
   delAppointment,
-  verifyBack
+  verifyBack,
+  acidSignIn,
+  closeOrder,
 } from '@/common/request/userAppointment'
-import { refund } from '@/common/request/order'
+import { appointmentRefund } from '@/common/request/order'
 
 const userId = uni.getStorageSync('userId')
 export default {
@@ -159,6 +182,8 @@ export default {
   },
   data() {
     return {
+      isClick: true,
+      payType: 0,
       tabs: [
         {
           title: '未缴费',
@@ -189,21 +214,20 @@ export default {
     type() {
       this.active = this.type
     },
-    regitrNum(){
+    regitrNum() {
       this.init()
-    }
+    },
   },
-  computed:{
-    regitrNum(){
-      return this.$store.state.registerNum
-    }
-  },
+
   created() {
     if (this.type) {
       this.active = this.type
     }
   },
   computed: {
+    regitrNum() {
+      return this.$store.state.registerNum
+    },
     alltotal() {
       let allnum = 0
       this.dataList.forEach(item => {
@@ -218,6 +242,36 @@ export default {
     },
   },
   methods: {
+    closeOrder({ id }) {
+      uni.showModal({
+        title: '提示',
+        content: '是否确认关闭该订单？',
+        confirmColor: '#0AB2C1',
+        success: async ({ confirm }) => {
+          if (confirm) {
+            await closeOrder({ id })
+            uni.showToast({
+              title: '操作成功！',
+              icon: 'none',
+            })
+            setTimeout(() => {
+              this.getList()
+            }, 800)
+          }
+        },
+      })
+    },
+    compare(item) {
+      console.log(String.replaceAll)
+      console.log(item, 'item=')
+
+      return (
+        new Date(`${item.visitDate.replace(/-/g, '/')} ${item.endTime}`) <
+        new Date()
+      )
+
+      // return item.cancel
+    },
     //初始化数据
     init() {
       this.dataList = []
@@ -234,14 +288,26 @@ export default {
         pageSize: this.pageSize,
         state: this.active,
       }
-      this.dataList = await getUserList(params)
+      uni.showLoading()
+      try {
+        this.dataList = (await getUserList(params)).list
+        uni.hideLoading()
+      } catch (error) {
+        uni.hideLoading()
+      }
     },
-    isToday(visitDate) {
-      return this.FORMATDATE(new Date(), 'yyyy-MM-dd') == visitDate
+    isToday(item) {
+      // 核酸检测科室
+      if (Number(item.deptId) === 8323) {
+        return false
+      } else {
+        return this.FORMATDATE(new Date(), 'yyyy-MM-dd') == item.visitDate
+      }
     },
-    goDetail(id) {
+    // state,deptId 用于核酸签到
+    goDetail(id, state, deptId) {
       uni.navigateTo({
-        url: `/pages-user/myAppointment/detail?id=${id}`,
+        url: `/pages-user/myAppointment/detail?id=${id}&deptId=${deptId}&state=${state}&patientCard=${this.patientInfo.patientCard}`,
       })
     },
     topbarChange(state) {
@@ -255,7 +321,10 @@ export default {
         this.dataList.forEach(item => this.$set(item, 'checked', false))
         this.isAll = false
       } else {
-        this.dataList.forEach(item => this.$set(item, 'checked', true))
+        //先筛选出预约时间大于当前时间的
+        this.dataList
+          .filter(val => !this.compare(val))
+          .forEach(item => this.$set(item, 'checked', true))
         this.isAll = true
       }
     },
@@ -276,36 +345,69 @@ export default {
       }
     },
     pay(index) {
+      console.log(this.dataList[index], '==============')
+      if (this.compare(this.dataList[index])) {
+        uni.showToast({
+          title: '已超过支付时间，当前订单不可支付',
+          icon: 'none',
+        })
+        return
+      }
       this.dataList[index].checked = true
-      this.openPay()
+      this.payOrderItem = this.dataList[index] //支付订单
+      this.openPay(0)
     },
-    openPay() {
+    openPay(type) {
+      this.payType = type //全选或单选 1全选 0单选
+      console.log('支付------------')
       const checked = this.dataList.filter(({ checked }) => checked).length
-
       if (!checked) return
       this.$refs.pay.show()
     },
     async orderPay() {
-      const params = {
-        userId: uni.getStorageSync('userId'),
-        bizId: this.dataList
-          .filter(({ checked }) => checked)
-          .map(({ id }) => id)
-          .join(','),
-        bizType: 'RESERVE',
-        agreement: true,
-      }
-      const data = await submitAppointment(params)
-      if(data){
-        if(data.tradeId && data.tradeType){
-          this.$refs.pay.payTypeC(data.tradeId, data.tradeType)
-        }else{
-          if(data.orderId){
-            this.$refs.pay.close()
-            uni.showToast({
-              title:'支付成功！'
-            })
-            this.init()
+      //全选支付
+      if (this.payType) {
+        //只有一个选项
+        const slectList = this.dataList.filter(({ checked }) => checked)
+        if (slectList.length == 1) {
+          this.$refs.pay.payTypeC(slectList[0].orderId, 'ORDER')
+          return
+        }
+        //多个选项
+        const params = {
+          userId: uni.getStorageSync('userId'),
+          bizId: this.dataList
+            .filter(({ checked }) => checked)
+            .map(({ id }) => id)
+            .join(','),
+          bizType: 'RESERVE',
+          agreement: true,
+        }
+        if (!this.isClick) {
+          return uni.showToast({ title: '请勿重复点击', icon: 'none' })
+        }
+        this.isClick = false
+        const data = await submitAppointment(params)
+        this.isClick = true
+        if (data) {
+          if (data.tradeId && data.tradeType) {
+            this.$refs.pay.payTypeC(data.tradeId, data.tradeType)
+          } else {
+            if (data.orderId) {
+              this.$refs.pay.close()
+              uni.showToast({
+                title: '支付成功！',
+              })
+              this.init()
+            }
+          }
+        }
+      } else {
+        //单选支付
+        const data = this.payOrderItem
+        if (data) {
+          if (data.orderId) {
+            this.$refs.pay.payTypeC(data.orderId, 'ORDER')
           }
         }
       }
@@ -323,30 +425,49 @@ export default {
         },
       })
     },
-    isVerifyBack(orderId){
-       verifyBack({orderId})
+    isVerifyBack(orderId) {
+      verifyBack({ orderId })
     },
     cancel(item) {
       uni.showModal({
         title: '是否确认操作？',
         success: async ({ confirm }) => {
           if (confirm) {
-            let res =  await verifyBack({orderId: item.id})
-            if(res){
-              await refund({
-                orderId: item.orderId
+            let res = await verifyBack({ orderId: item.id })
+            if (res) {
+              uni.showLoading()
+              await appointmentRefund({
+                id: item.id,
+                documentNo: item.documentNo,
               })
+              uni.hideLoading()
               uni.showToast({
                 icon: 'none',
                 title: '申请取消成功',
+                duration: 2000,
               })
-              this.init()
-            }else{
+              setTimeout(() => {
+                this.init() //延时刷新列表 toast被顶掉
+              }, 1500)
+            } else {
               uni.showToast({
                 icon: 'none',
-                title: '当前订单不能退费',
+                title: '当日及之前的订单无法退费',
               })
             }
+          }
+        },
+      })
+    },
+    // 核酸检测签到
+    async acidSignIn(item) {
+      uni.showModal({
+        content: '确认签到后将无法退款，请确认是否签到？',
+        success: async res => {
+          if (res.confirm) {
+            await acidSignIn({ id: item.id })
+            this.init()
+            this.$tip('签到成功！')
           }
         },
       })
@@ -361,6 +482,10 @@ page {
 }
 </style>
 <style lang="scss" scoped>
+.is-disabled {
+  border: 1px solid #ccc;
+  color: #ccc;
+}
 .tabWrap {
   padding: 20rpx 30rpx;
 
@@ -468,6 +593,15 @@ page {
   &::after {
     border: none;
   }
+  &.primary {
+    background-color: $uni-color-primary;
+    border-color: $uni-color-primary;
+    color: #fff;
+  }
+}
+.is-disabled {
+  border: 1px solid #ccc;
+  color: #ccc;
 }
 
 .button-primary {

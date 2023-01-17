@@ -87,6 +87,7 @@ export default {
   },
   data() {
     return {
+      isSubmit: false,
       treatmentType: 'inspection',
       treatmentTypes: [
         {
@@ -133,6 +134,11 @@ export default {
       this.info = this.order
     }
   },
+  onShow() {
+    uni.$on('caBack', () => {
+      this.isSubmit = true
+    })
+  },
   methods: {
     async getDraft() {
       this.info = await hasDisDraft({ orderId: this.order.orderId })
@@ -141,6 +147,7 @@ export default {
       this.treatmentType = val
     },
     onSubmit(status) {
+      //处置提交
       if (this.info.id) {
         this.update(status)
         return
@@ -208,7 +215,17 @@ export default {
         return
       }
 
-      insertDispose(form).then(() => this.$emit('submit'))
+      insertDispose(form)
+        .then(() => this.$emit('submit'))
+        .catch(error => {
+          console.log(error, '错误信息')
+          //错误码为此时跳转授权
+          if (error.cause.apiError.val$errCode === 'CA_SIGN_ERROR') {
+            uni.navigateTo({
+              url: '/pages-doctor/autograph/autograph',
+            })
+          }
+        })
     },
     update(status) {
       const f = this.$refs[this.treatmentType].form
@@ -245,7 +262,17 @@ export default {
       })
 
       if (!f.id) Object.assign(form, { id: this.info.id })
-      doctorUpdateDetail(form).then(() => this.$emit('submit'))
+      doctorUpdateDetail(form)
+        .then(() => this.$emit('submit'))
+        .catch(error => {
+          console.log(error, '错误信息')
+          //错误码为此时跳转授权
+          if (error.cause.apiError.val$errCode === 'CA_SIGN_ERROR') {
+            uni.navigateTo({
+              url: '/pages-doctor/autograph/autograph',
+            })
+          }
+        })
     },
     onCopy() {
       // #ifdef MP-WEIXIN

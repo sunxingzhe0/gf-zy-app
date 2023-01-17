@@ -552,7 +552,7 @@ export default {
     &.on {
       background: $uni-color-primary;
 
-      /deep/.uni-tag--default {
+      ::v-deep.uni-tag--default {
         color: #fff;
       }
     }
@@ -562,7 +562,7 @@ export default {
     }
   }
 
-  /deep/.uni-list-item--hover {
+  ::v-deep.uni-list-item--hover {
     background: none;
   }
 

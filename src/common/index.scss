@@ -21,12 +21,29 @@
   align-items: flex-start;
 }
 
+.flex-between-end {
+  display: flex;
+  display: -moz-flex;
+  display: -webkit-flex;
+  display: -ms-flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
 .flex-between {
   display: flex;
   display: -moz-flex;
   display: -webkit-flex;
   display: -ms-flex;
   justify-content: space-between;
+  align-items: center;
+}
+.flex-around {
+  display: flex;
+  display: -moz-flex;
+  display: -webkit-flex;
+  display: -ms-flex;
+  justify-content: space-around;
   align-items: center;
 }
 .flex-start-start {
@@ -135,7 +152,7 @@
 			border-right: 1px solid #E6E6E6;
 		}
 	}
-	
+
 }
 .uni-list-item{background: none !important;}
 

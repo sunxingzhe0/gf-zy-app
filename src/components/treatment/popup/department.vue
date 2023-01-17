@@ -13,7 +13,7 @@ export default {
   },
   computed: {
     list() {
-      return this.chooseList.map(_ => ({ value: _.execDeptName }))
+      return this.chooseList.map(_ => ({ value: _.execDeptName || '暂无' }))
     },
   },
   methods: {

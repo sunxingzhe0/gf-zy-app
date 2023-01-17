@@ -128,7 +128,15 @@
           :src="require('@/assets/off38@2x.png')"
           mode="aspectFit"
           style="width: 50rpx;"
-          @click="finishWork"
+          @click="finishWork(0)"
+        ></image>
+        <image
+          v-if="!orderMedical"
+          class="bottom-bar__icon"
+          :src="require('@/assets/chatstop.png')"
+          mode="aspectFit"
+          style="width: 50rpx;"
+          @click="finishWork(1)"
         ></image>
         <input
           class="bottom-bar__input"
@@ -227,6 +235,7 @@ import {
   receiving,
   clinicInfo,
   over,
+  chatStop,
   doctorOrderAudit,
   findCommonWords,
   addCommonWords,
@@ -236,7 +245,9 @@ import {
   doctorSessionData,
   findDiagnosisInClinic,
   findDiagByDiagId,
+  oneSyncHisDisease,
 } from '@/common/request/index.js'
+import { getUserOnlineState } from '@/common/request/chat'
 import { getOrderInfo } from '@/common/request/prescriptionList.js'
 export default {
   components: {
@@ -245,6 +256,9 @@ export default {
   },
   data() {
     return {
+      tiemr: null,
+      userStataus: false,
+      orderMedical: null, //是否已开病历
       windowHeight: uni.getSystemInfoSync().windowHeight,
       userId: uni.getStorageSync('userId'),
       userInfo: this.$store.state.userInfo,
@@ -311,11 +325,9 @@ export default {
     },
   },
   async onLoad(options) {
-    console.log(options,'参数')
     uni.$on('MESSAGE_EVENT_HANDLER', this.messageEventHandler)
     uni.$on('SocketConnect', this.onSocketConnect)
     uni.$on('onMessage', this.messageHandler)
-
     this.order = options
 
     this.getCommonWords()
@@ -359,7 +371,17 @@ export default {
       uni.stopPullDownRefresh()
     })
   },
+
   methods: {
+    //轮询读取用户在线状态(每次轮询前都需要清除上一个轮询)
+    getUserStatus(userId) {
+      clearInterval(this.tiemr)
+      this.userStataus = false
+      this.tiemr = setInterval(async () => {
+        this.userStataus = await getUserOnlineState({ userId })
+        console.log(this.userStataus)
+      }, 3000)
+    },
     deleteInterval(interval) {
       clearInterval(this[interval])
       this[interval] = null
@@ -369,9 +391,12 @@ export default {
         orderId: this.order.orderId,
       }
       const order = await clinicInfo(params)
+      //获取诊室详情后开始轮询患者在线状态
+      this.getUserStatus(order.userId)
       this.order = { ...order }
 
-      const { status, startTime, closeTime, bizType } = order
+      const { status, startTime, closeTime, bizType, medical } = order
+      this.orderMedical = medical
 
       let countDownTime = null
       if (bizType == 'REPEAT_CLINIC' && status == 'APPOINTMENT' && startTime) {
@@ -464,10 +489,11 @@ export default {
         },
       })
     },
-    finishWork() {
+    //结束服务||终止服务
+    finishWork(e) {
       uni.showModal({
         title: '提示',
-        content: '是否确认？',
+        content: e ? '是否确认终止服务？' : '是否确认结束服务？',
         cancelText: '否',
         confirmText: '是',
         success: async ({ confirm }) => {
@@ -475,7 +501,7 @@ export default {
             const params = {
               orderId: this.order.orderId,
             }
-            await over(params)
+            !e ? await over(params) : await chatStop(params)
             this.suspendedBtnShow = false
             if (this.order.wayType == 'VIDEO') {
               const params = {
@@ -497,6 +523,7 @@ export default {
                       this.order = { ...list[0] }
                       await this.getClinicInfo()
                       this.startDiagnose()
+                      this.getHistoryMessage()
                     } else if (cancel) {
                       uni.navigateBack({
                         delta: 1,
@@ -514,6 +541,7 @@ export default {
         },
       })
     },
+
     cancelInvite() {
       this.videoWaitShow = false
       this.suspendedBtnShow = false
@@ -543,9 +571,7 @@ export default {
     },
     inputChange({ detail }) {
       const value = detail.value
-      if (!value) return
-
-      this.inputValue = value
+      value && (this.inputValue = value)
     },
     inputConfirm() {
       if (!this.inputValue || this.webSocket.getSocketConnect()) return
@@ -554,8 +580,24 @@ export default {
       this.inputValue = ''
       this.sendMessage({ value })
     },
-    async applyView({ id, memberId, open }) {
+    async applyView({
+      id,
+      memberId,
+      open,
+      inSno,
+      inStatus,
+      admitDate,
+      dischargeDate,
+      cardNo,
+    }) {
       if (open) {
+        //住院记录
+        if (inSno) {
+          uni.navigateTo({
+            url: `/pages-zy/hospRecords/detail?inSno=${inSno}&times=${inStatus}&beginTime=${admitDate}&endTime=${dischargeDate}&cardNo=${cardNo}`,
+          })
+          return
+        }
         uni.navigateTo({
           url: '/pages-user/healthRecords/detail?id=' + id,
         })
@@ -587,13 +629,11 @@ export default {
       this.webSocket.sendMessage(form, childMessageType, chatType)
     },
     pageScroll() {
-      this.$nextTick(() => {
-        const node = uni
+      this.$nextTick(() =>
+        uni
           .createSelectorQuery()
           .in(this)
           .select('#container')
-
-        node
           .boundingClientRect(data => {
             if (
               data.height >=
@@ -605,8 +645,8 @@ export default {
               })
             }
           })
-          .exec()
-      })
+          .exec(),
+      )
     },
     onCommonWords(payload) {
       if (payload.index > -1) {
@@ -650,6 +690,12 @@ export default {
       })
     },
     video() {
+      if (!this.userStataus) {
+        return uni.showToast({
+          title: '当前患者已离线，无法发送视频',
+          icon: 'none',
+        })
+      }
       this.videoWaitShow = true
       this.sendMessage({ childMessageType: this.$protobufMessageType.CRVIDEO })
     },
@@ -669,11 +715,8 @@ export default {
           cancelText: '否',
           confirmText: '是',
           confirmColor: '#0AB2C1',
-          success: ({ confirm }) => {
-            if (confirm) {
-              this.delCommonWords(this.commonWords[action].id)
-            }
-          },
+          success: ({ confirm }) =>
+            confirm && this.delCommonWords(this.commonWords[action].id),
         })
       } else {
         this.currentEditCommonWordsIndex = action
@@ -715,7 +758,7 @@ export default {
       if (info.to != `#${this.order.sessionId}`) return
 
       info.msgId && this.webSocket.sendMessageCallback(this.order.sessionId)
-
+      console.log(info, '接受数据====')
       this.messageBox.push({ ...info })
       this.pageScroll()
 
@@ -808,7 +851,7 @@ export default {
               (c.mainDiagnosis ? '主诊断：' : '诊断：') +
               c.prefixName +
               c.diagnosisName +
-              c.suffixName +
+              (c.suffixName || '') +
               ' ' +
               c.childDtos
                 .map(
@@ -816,7 +859,7 @@ export default {
                     '子诊断：' +
                     child.prefixName +
                     child.diagnosisName +
-                    c.suffixName,
+                    (c.suffixName || ''),
                 )
                 .join(),
           )
@@ -846,6 +889,20 @@ export default {
       }
       uni.navigateTo({
         url: `/pages-doctor/appointment/add?orderId=${this.order.orderId}&deptId=${this.order.deptId}`,
+      })
+    },
+    //同步病历
+    syncHisDisease() {
+      console.log('同步病历')
+      uni.showModal({
+        title: '提示',
+        content: '是否同步HIS的病历数据(如果有的话)覆盖当前病历',
+        success: async ({ confirm }) => {
+          if (confirm) {
+            await oneSyncHisDisease({ orderId: this.order.orderId })
+            uni.showToast({ icon: 'none', title: '操作成功！' })
+          }
+        },
       })
     },
     diagnosis() {

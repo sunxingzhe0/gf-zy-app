@@ -7,7 +7,9 @@
       class="top-bg"
       :style="{
         backgroundImage: `url(${FILE_URL_BUILT_IN(
-          info.status == 'EXECUTED' || info.payStatus == 'RETURNPAID'
+          info.status == 'EXECUTED' ||
+            info.payStatus == 'RETURNPAID' ||
+            info.status == 'CANCELLATION'
             ? 'orderIngoBg2_grey.png'
             : 'orderIngoBg2.png',
         )})`,
@@ -22,6 +24,8 @@
           ? '未执行'
           : info.status == 'EXECUTED'
           ? '已执行'
+          : info.status == 'CANCELLATION'
+          ? '已作废'
           : info.payStatus == 'EXPIRED'
           ? '已失效'
           : info.payStatus == 'NONPAID'
@@ -251,6 +255,7 @@ export default {
   },
   data() {
     return {
+      isClick: true,
       appCardStyles: 'margin: 20rpx 20rpx 0; padding: 20rpx;',
       appListItemStyles: {
         padding: '20rpx',
@@ -299,7 +304,8 @@ export default {
   },
   onLoad(option) {
     this.id = option.id
-    this.disOrderId = option.disOrderId
+    this.disOrderId = option.bizId
+    console.log(option.bizId, 'bizid-----')
     this.getData()
   },
   methods: {
@@ -319,12 +325,18 @@ export default {
       this.$refs.pay.show()
     },
     async orderPay() {
+      if (!this.isClick) {
+        return uni.showToast({ title: '请勿重复点击', icon: 'none' })
+      }
+      this.isClick = false
+
       submitAppointment({
         userId: uni.getStorageSync('userId'),
         bizId: this.info.id,
         bizType: 'DISPOSAL',
         agreement: true,
       }).then(order => {
+        this.isClick = true
         if (!order) return
         if (order.isPay) {
           this.getData()
@@ -431,7 +443,7 @@ export default {
 }
 
 .button {
-  width: 152rpx;
+  width: 160rpx;
   line-height: 60rpx;
   margin: 0 0 0 12rpx;
   text-align: center;

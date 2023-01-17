@@ -21,7 +21,7 @@
           v-model="phone"
           type="number"
         />
-        <view style="padding-left: 20rpx;" @click="dele('phone')">
+        <view style="padding-left: 20rpx" @click="dele('phone')">
           <image class="delIcon" :src="require('@/assets/del.png')"></image>
         </view>
       </view>
@@ -50,7 +50,7 @@
           v-model="account"
           type="text"
         />
-        <view style="padding-left: 20rpx;" @click="dele('account')">
+        <view style="padding-left: 20rpx" @click="dele('account')">
           <image class="delIcon" :src="require('@/assets/del.png')"></image>
         </view>
       </view>
@@ -64,11 +64,11 @@
           :password="!isOpen"
           type="text"
         />
-        <view style="padding-left: 20rpx;">
+        <view style="padding-left: 20rpx">
           <image
             class="delIcon"
             :src="require('@/assets/del.png')"
-            style="margin-right: 16rpx;"
+            style="margin-right: 16rpx"
             @click="dele('password')"
           ></image>
           <text
@@ -89,7 +89,9 @@
             :primary-color="primaryColor"
             ><text class="checkText">我同意</text></evan-checkbox
           >
-          <text class="agree" @click="agree">《{{ agreement.name }}》</text>
+          <text class="agree" v-if="agreement.name" @click="agree"
+            >《{{ agreement.name }}》</text
+          >
         </view>
         <text
           class="agree"
@@ -98,11 +100,22 @@
           >忘记密码</text
         >
       </view>
-      <button class="loginBtn" @click="login">登 录</button>
+      <view style="color:#0ab2c1;margin-top: 20rpx;" class="flex-start-center">
+        <evan-checkbox
+          v-model="isCheckPwd"
+          shape="square"
+          :primary-color="primaryColor"
+        ></evan-checkbox
+        ><text class="checkPwd">记住密码</text></view
+      >
+      <button class="loginBtn" @click="handelLogin">登 录</button>
     </view>
+
+    <!-- #ifdef MP-WEIXIN -->
     <view class="forget" @click="goto('/pages/login/userLogin')"
       >返回患者首页</view
     >
+    <!-- #endif -->
 
     <image class="gb" :src="require('@/assets/loginBgB.png')"></image>
     <uni-popup ref="popup" type="center">
@@ -122,9 +135,11 @@ import {
   showAgreement,
   encryptedDataByApp,
 } from '@/common/request/index'
+import MD5 from 'crypto-js/md5'
 export default {
   data() {
     return {
+      isTodoctor: false,
       token: uni.getStorageSync('token'),
       type: 2,
       isOpen: false,
@@ -138,6 +153,7 @@ export default {
       checked: false,
       miniToken: '',
       agreement: {},
+      isCheckPwd: true,
     }
   },
   computed: {
@@ -163,7 +179,35 @@ export default {
     window.wxLoginInfo = value => this.wxLoginInfo(value)
     // #endif
   },
+  onShow() {
+    // uni.$on('caBack', () => {
+    //   this.isTodoctor = true
+    // })
+    this.setAccountInfo()
+  },
+
   methods: {
+    //记住或删除账号密码
+    rememberDelStoragePwd() {
+      if (this.isCheckPwd) {
+        uni.setStorageSync('account', this.account)
+        uni.setStorageSync('password', this.password)
+      } else {
+        uni.removeStorageSync('account')
+        uni.removeStorageSync('password')
+      }
+    },
+    //赋值记住的账号密码
+    setAccountInfo() {
+      const account = uni.getStorageSync('account')
+      const password = uni.getStorageSync('password')
+      if (account) {
+        this.account = account
+      }
+      if (password) {
+        this.password = password
+      }
+    },
     // 获取协议
     async getshowAgreement() {
       this.agreement = await showAgreement({
@@ -235,7 +279,7 @@ export default {
         url,
       })
     },
-    async login() {
+    async handelLogin() {
       if (this.account == '') {
         uni.showToast({
           icon: 'none',
@@ -257,13 +301,20 @@ export default {
         })
         return
       }
+      //是否前往签名
+      // if (!this.isTodoctor) {
+      //   return uni.navigateTo({
+      //     url: '/pages-doctor/autograph/autograph',
+      //   })
+      // }
 
-      uni.showLoading({
-        title: '登录中',
-      })
+      // uni.showLoading({
+      //   title: '登录中',
+      // })
+
       await this.$store.dispatch('accountLogin', {
         account: this.account,
-        password: this.password,
+        password: MD5(this.password).toString(),
       })
 
       //#ifdef H5||APP-PLUS
@@ -273,6 +324,7 @@ export default {
       //#ifdef MP-WEIXIN
       this.$store.dispatch('loginInfo')
       // #endif
+      this.rememberDelStoragePwd() //登录成功后是否记住密码
     },
     agree() {
       this.$refs.popup.open()
@@ -390,7 +442,7 @@ export default {
   z-index: 4;
 
   .formItem {
-    padding: 20rpx 0;
+    /* padding: 20rpx 0; */
     border-bottom: 1px solid #e6e6e6;
     margin-bottom: 30rpx;
 
@@ -399,6 +451,9 @@ export default {
       font-size: 30rpx;
       color: #333;
       border: 0;
+      min-height: 80rpx;
+      display: flex;
+      align-items: center;
     }
 
     .inputplaceholder {
@@ -432,11 +487,11 @@ export default {
     }
   }
 
-  /deep/.evan-checkbox__label {
+  ::v-deep.evan-checkbox__label {
     font-size: 28rpx;
   }
 
-  /deep/.evan-checkbox__inner {
+  ::v-deep.evan-checkbox__inner {
     width: 28rpx !important;
     height: 28rpx !important;
   }
@@ -524,5 +579,8 @@ export default {
     text-align: center;
     box-sizing: border-box;
   }
+}
+.checkPwd {
+  margin-left: 20rpx;
 }
 </style>

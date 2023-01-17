@@ -37,7 +37,7 @@
 				</View>
 
 				<view class="flex-start-center" @click="showFilterPopup">
-					<image class="search-bar-wrapper__icon2" :src="require('@/assets/shaixuan@2x.png')" mode="aspectFit"></image>
+					<image class="search-bar-wrapper__icon2" :src="require('@/assets/shaixuan.png')" mode="aspectFit"></image>
 					<text style="margin-left: 8rpx;">筛选</text>
 				</view>
 			</view>

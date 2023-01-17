@@ -5,8 +5,8 @@
       <view
         class="item"
         :class="{ active: active(item) }"
-        v-for="item in list"
-        :key="item.value"
+        v-for="(item, index) in list"
+        :key="index"
         @click="select(item)"
         >{{ item.label || item.value }}</view
       >
@@ -87,6 +87,8 @@ export default {
 
 .body {
   flex-wrap: wrap;
+  max-height: 600px;
+  overflow: scroll;
 }
 
 .item {

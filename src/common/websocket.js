@@ -11,7 +11,9 @@ import configJson from './protobuf/imessage'
 import store from '../store/index'
 import { userImSequence, userSyncData } from './request/im'
 import { webSocketUrl } from '@/urls'
-
+const innerAudioContext = uni.createInnerAudioContext()
+innerAudioContext.src =
+  'https://miapp.chuntaoyisheng.com/%E4%B8%9A%E5%8A%A1%E6%B6%88%E6%81%AF%E9%80%9A%E7%9F%A5%E8%AF%AD%E9%9F%B3.mp3'
 const IMessage = protobuf.Root.fromJSON(configJson).lookupType('IMessage')
 // socket实例
 let socketTask = null
@@ -105,7 +107,7 @@ function login() {
       RequestType: 1,
       login: {
         token,
-        timestamp: +new Date(),
+        timestamp: Date.now(),
         systemType: 'WX',
         deviceType: 'WX',
       },
@@ -159,7 +161,8 @@ function reconnect() {
     timer = null
 
     // 已经连接 || 没有网络 || 没有imToken 均不作重连
-    if (socketTask?.readyState < 2 || !internetConnected || !imToken) return
+    // if (socketTask?.readyState < 2 || !internetConnected || !imToken) return
+    if (socketTask?.readyState < 2 || !imToken) return
 
     console.log(`Socket重连第${reconnectTime++}次`)
     socketTask = null
@@ -240,7 +243,6 @@ function handleMessage(data) {
       receivedMessage(data)
       break
     default:
-      break
   }
 }
 
@@ -264,13 +266,15 @@ async function sync(data) {
     syncData.forEach(item => {
       uni.$emit('sync', item.command)
       handleSync(item)
+      if (item.command === 'SYNC_BIZ_NOTICE') {
+        innerAudioContext.play()
+      }
     })
   }
-
   console.log('Sync', syncData)
 }
 
-async function handleSync({ command, body }) {
+function handleSync({ command, body }) {
   switch (command) {
     // 资质审核通过
     case 'SYNC_AUDIT_001':
@@ -290,21 +294,19 @@ async function handleSync({ command, body }) {
 
       const sessionId = body.to.substr(1)
 
-      if (!sessionId) return
-
-      if (unRead[sessionId]) {
-        unRead[sessionId].filter(({ msgId }) => msgId === body.msgId).length ==
-          0 &&
-          unRead[sessionId].push({
+      sessionId && unRead[sessionId]
+        ? !unRead[sessionId].has(body.msgId) &&
+          unRead[sessionId].set(body.msgId, {
             ...body,
           })
-      } else {
-        unRead[sessionId] = [
-          {
-            ...body,
-          },
-        ]
-      }
+        : (unRead[sessionId] = new Map([
+            [
+              body.msgId,
+              {
+                ...body,
+              },
+            ],
+          ]))
 
       uni.$emit('onMessage', {
         ...body,
@@ -320,11 +322,13 @@ async function handleSync({ command, body }) {
 // 初始化同步信息
 async function syncInit() {
   const userId = uni.getStorageSync('userId')
-  const version = await userImSequence({
-    userId,
-  })
-  uni.setStorageSync('im_version', version)
-  console.log('IM: 初始化同步版本号:' + version)
+  if (uni.getStorageSync('token')) {
+    const version = await userImSequence({
+      userId,
+    })
+    uni.setStorageSync('im_version', version)
+    console.log('IM: 初始化同步版本号:' + version)
+  }
 }
 
 /**
@@ -353,6 +357,10 @@ async function loginSuccess(data) {
 
   // 登录成功后开始发送心跳
   heartCheck()
+  //登录成功后开始监听是否改变音量大小
+  uni.$on('handelVideoPage', data => {
+    innerAudioContext.volume = data ? 0.4 : 1
+  })
 }
 
 /**
@@ -407,23 +415,21 @@ function receivedMessage(data) {
 
   const userId = uni.getStorageSync('userId')
   const sessionId = data.info.to.substr(1)
-  if (!unRead[sessionId]) {
-    unRead[sessionId] = [
-      {
-        ...data,
-      },
-    ]
-  } else {
-    const has =
-      unRead[sessionId].filter(message => {
-        return data.info.msgId === (message?.info?.msgId ?? message.msgId)
-      }).length > 0
+  const msgId = data.info.msgId
 
-    !has &&
-      unRead[sessionId].push({
+  unRead[sessionId]
+    ? !unRead[sessionId].has(msgId) &&
+      unRead[sessionId].set(msgId, {
         ...data,
       })
-  }
+    : (unRead[sessionId] = new Map([
+        [
+          msgId,
+          {
+            ...data,
+          },
+        ],
+      ]))
 
   if (data.info.from == userId) {
     sendMessageCallback(sessionId)
@@ -456,16 +462,21 @@ function sendMessageCallback(sessionId) {
     })
   })
 
-  unRead[sessionId] = []
+  unRead[sessionId] = null
 }
 
 // 获取未读消息
 function getUnread(sessionId) {
-  return unRead[sessionId] || []
+  const list = unRead[sessionId] || new Map()
+  return Object.values(Object.fromEntries(list.entries()))
+  // return Array.from(list.values)
 }
 
-// 获取Socket连接状态
+// 获取Socket连接状态.
 function getSocketConnect() {
+  if (!(internetConnected && socketTask?.readyState < 2)) {
+    reconnect()
+  }
   return internetConnected && socketTask?.readyState < 2 ? '' : '未连接'
 }
 

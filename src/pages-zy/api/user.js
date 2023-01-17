@@ -6,8 +6,8 @@ import apiV from './config.js'
  * @param {String} token
  * @returns {Promise<object>} res
  */
-export function patientList(params){
-  return request("zyApi/api/v1/patient/list", params, "GET")
+export function patientList(params) {
+  return request('zyApi/api/v1/patient/list', params, 'GET')
 }
 /**
  * 获取就诊人列表其他
@@ -15,8 +15,8 @@ export function patientList(params){
  * @param {String} payType 0 门诊，1 住院
  * @returns {Promise<object>} res
  */
-export function otherPatient(params){
-  return request("zyApi/api/v1/order/otherPatient", params, "GET")
+export function otherPatient(params) {
+  return request('zyApi/api/v1/order/otherPatient', params, 'GET')
 }
 
 /**
@@ -29,8 +29,8 @@ export function otherPatient(params){
  * @param {string} pageSize 每页数量
  * @returns {Promise<object>} res
  */
-export function appointmentData(params){
-  return request("zyApi/api/v1/order/appointmentData", params, "GET")
+export function appointmentData(params) {
+  return request('zyApi/api/v1/order/appointmentData', params, 'GET')
 }
 
 /**
@@ -41,8 +41,8 @@ export function appointmentData(params){
  * @param {string} type 预约类型，0表示门诊，1表示住院，2表示体检
  * @returns {Promise<object>} res
  */
-export function otherData(params){
-  return request("zyApi/api/v1/order/otherData", params, "GET")
+export function otherData(params) {
+  return request('zyApi/api/v1/order/otherData', params, 'GET')
 }
 
 /**
@@ -55,8 +55,8 @@ export function otherData(params){
  * @param {string} pageSize 每页数量
  * @returns {Promise<object>} res
  */
-export function myAppointment(params){
-  return request(`zyApi/api/${apiV}/order/myAppointment`, params, "GET")
+export function myAppointment(params) {
+  return request(`zyApi/api/${apiV}/order/myAppointment`, params, 'GET')
 }
 
 /**
@@ -64,8 +64,8 @@ export function myAppointment(params){
  * @param {string} orderId 订单号
  * @returns {Promise<object>} res
  */
-export function appointmentDetail(params){
-  return request(`zyApi/api/${apiV}/order/appointmentDetail`, params, "GET")
+export function appointmentDetail(params) {
+  return request(`zyApi/api/${apiV}/order/appointmentDetail`, params, 'GET')
 }
 
 /**
@@ -73,8 +73,8 @@ export function appointmentDetail(params){
  * @param {string} orderNo 商户订单号
  * @returns {Promise<object>} res
  */
-export function orderRefund(params){
-  return request(`zyApi/api/v1/order/orderRefund`, params, "GET")
+export function orderRefund(params) {
+  return request(`zyApi/api/v1/order/orderRefund`, params, 'GET')
 }
 
 /**
@@ -85,8 +85,8 @@ export function orderRefund(params){
  * @param {string} cardType 卡类型
  * @returns {Promise<object>} res
  */
-export function outpatientRecord(params){
-  return request('zyApi/api/v1/record/outpatientRecord', params, "GET")
+export function outpatientRecord(params) {
+  return request('zyApi/api/v1/record/outpatientRecord', params, 'GET')
 }
 
 /**
@@ -97,8 +97,8 @@ export function outpatientRecord(params){
  * @param {string} cardType 卡类型
  * @returns {Promise<object>} res
  */
-export function hospitalRecord(params){
-  return request('zyApi/api/v1/record/hospitalRecord', params, "GET")
+export function hospitalRecord(params) {
+  return request('zyApi/api/v1/record/hospitalRecord', params, 'GET')
 }
 
 /**
@@ -109,8 +109,8 @@ export function hospitalRecord(params){
  * @param {string} cardType 卡类型
  * @returns {Promise<object>} res
  */
-export function phyList(params){
-  return request('zyApi/api/v1/record/phyList', params, "GET")
+export function phyList(params) {
+  return request('zyApi/api/v1/record/phyList', params, 'GET')
 }
 
 /**
@@ -120,8 +120,8 @@ export function phyList(params){
  * @param {string} cardType 卡类型
  * @returns {Promise<object>} res
  */
-export function outpatient(params){
-  return request('zyApi/api/v1/record/outpatient', params, "GET")
+export function outpatient(params) {
+  return request('zyApi/api/v1/record/outpatient', params, 'GET')
 }
 
 /**
@@ -133,8 +133,8 @@ export function outpatient(params){
  * @param {string} inStatus 住院状态
  * @returns {Promise<object>} res
  */
-export function findEvaluateListZy(params){
-  return request('zyApi/api/v1/evaluate/findEvaluateList', params, "GET")
+export function findEvaluateListZy(params) {
+  return request('zyApi/api/v1/evaluate/findEvaluateList', params, 'GET')
 }
 
 /**
@@ -145,8 +145,8 @@ export function findEvaluateListZy(params){
  * @param {string} content 评价内容
  * @returns {Promise<object>} res
  */
-export function addEvaluatezy(params){
-  return request('zyApi/api/v1/evaluate/addEvaluate', params, "POST")
+export function addEvaluatezy(params) {
+  return request('zyApi/api/v1/evaluate/addEvaluate', params, 'POST')
 }
 
 /**
@@ -155,8 +155,8 @@ export function addEvaluatezy(params){
  * @param {string} searchKeywords
  * @returns {Promise<object>} res
  */
-export function myRegDocList(params){
-  return request('/api/v1/appointment/myRegDocList', params, "GET")
+export function myRegDocList(params) {
+  return request('/api/v1/appointment/myRegDocList', params, 'GET')
 }
 /**
  * 来院人员信息登记
@@ -171,8 +171,8 @@ export function myRegDocList(params){
  * @param {String} remark 备注
  * @returns {Promise<object>} res
  */
-export function outsiderRegister(params){
-  return request('zyApi/api/v1/outsider/outsiderRegister', params, "POST")
+export function outsiderRegister(params) {
+  return request('zyApi/api/v1/outsider/outsiderRegister', params, 'POST')
 }
 /**
  * 体温登记
@@ -181,8 +181,8 @@ export function outsiderRegister(params){
  * @param {String} remark 备注
  * @returns {Promise<object>} res
  */
-export function bodyTemperature(params){
-  return request('zyApi/api/v1/outsider/bodyTemperature', params, "POST")
+export function bodyTemperature(params) {
+  return request('zyApi/api/v1/outsider/bodyTemperature', params, 'POST')
 }
 
 /**
@@ -190,8 +190,8 @@ export function bodyTemperature(params){
  * @param {String} phone 电话
  * @returns {Promise<object>} res
  */
-export function certificate(params){
-  return request('zyApi/api/v1/outsider/certificate', params, "GET")
+export function certificate(params) {
+  return request('zyApi/api/v1/outsider/certificate', params, 'GET')
 }
 
 /**
@@ -199,18 +199,17 @@ export function certificate(params){
  * @param {String} phone 电话
  * @returns {Promise<object>} res
  */
-export function outsiderCheck(params){
-  return request('zyApi/api/v1/outsider/check', params, "GET")
+export function outsiderCheck(params) {
+  return request('zyApi/api/v1/outsider/check', params, 'GET')
 }
 
 /**
  * 3.4.查询体检须知和医院介绍
  * @returns {Promise<object>} res
  */
-export function queryOrgData(params){
-  return request('zyApi/api/v1/introduce/queryOrgData', params, "GET")
+export function queryOrgData(params) {
+  return request('zyApi/api/v1/introduce/queryOrgData', params, 'GET')
 }
-
 
 /**
  * 我的预约线上预约
@@ -221,8 +220,8 @@ export function queryOrgData(params){
  * @param {string} inStatus 住院状态
  * @returns {Promise<object>} res
  */
-export function onlineList(params){
-  return request('/api/v1/order/list', params, "GET")
+export function onlineList(params) {
+  return request('/api/v1/order/list', params, 'GET')
 }
 
 /**
@@ -231,8 +230,8 @@ export function onlineList(params){
  * @param {string} userType //类型 (1:未缴费 2:未执行 3:已执行 4:已退费)
  * @returns {Promise<object>} res
  */
-export function disposeList(params){
-  return request('/api/v1/dispose/userList', params, "GET")
+export function disposeList(params) {
+  return request('/api/v1/dispose/userList', params, 'GET')
 }
 
 /**
@@ -240,8 +239,8 @@ export function disposeList(params){
  * @param {string} searchKeywords  关键字内容
  * @returns {Promise<object>} res
  */
-export function startExperts(params){
-  return request('zyApi/api/v1/employee/startExperts', params, "GET")
+export function startExperts(params) {
+  return request('zyApi/api/v1/employee/startExperts', params, 'GET')
 }
 
 /**
@@ -252,8 +251,8 @@ export function startExperts(params){
  * @param {string} bizType //服务类型：CONSULT咨询,REPEAT_CLINIC-复诊,CARRYON_PRESC-续方
  * @returns {Promise<object>} res
  */
-export function webMedicalList(params){
-  return request('/api/v1/archive/webMedicalList', params, "GET")
+export function webMedicalList(params) {
+  return request('/api/v1/archive/webMedicalList', params, 'GET')
 }
 
 /**
@@ -263,6 +262,42 @@ export function webMedicalList(params){
  * @param {string} visitNo  就诊流水号 2
  * @returns {Promise<object>} res
  */
-export function outpatientRecordInfo(params){
-  return request('zyApi/api/v1/record/outpatient', params, "GET")
+export function outpatientRecordInfo(params) {
+  return request('zyApi/api/v1/record/outpatient', params, 'GET')
+}
+
+/**
+ * 患者端提交意见反馈
+ * @param {string} name  姓名
+ * @param {string} reason  反馈原因
+ * @param {string} backContent  反馈内容
+ * @param {string} phone  联系电话
+ * @param {Array} picIds  图片id集合
+ * @returns {Promise<object>} res
+ */
+export function submitFeedBack(params) {
+  return request('zyApi/api/v1/record/submitFeedBack', params, 'POST')
+}
+
+/**
+ * 患者端查看历史记录
+ * @param {string} currentNum  当前页
+ * @param {string} pageSize  每页内容数
+ * @returns {Promise<object>} res
+ */
+export function getHistoryList(params) {
+  return request('zyApi/api/v1/record/getHistoryList', params, 'GET')
+}
+
+/**
+ * 患者端删除历史记录
+ * @param {string} id
+ * @returns {Promise<object>} res
+ */
+export function delUserFeedBack(params) {
+  return request(
+    `zyApi/api/v1/record/delUserFeedBack/${params.id}`,
+    params,
+    'POST',
+  )
 }

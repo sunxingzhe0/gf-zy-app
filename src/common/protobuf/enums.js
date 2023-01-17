@@ -2,7 +2,7 @@ export const enumChatType = {
   SINGLE: 0, //单聊 - 未使用
   GROUP: 1, //群聊 - 未使用
   DOCTOR: 2, //医生端标识
-  USER: 3  //用户端标识
+  USER: 3, //用户端标识
 }
 
 export const enumChildMessageTypeEnum = {
@@ -34,5 +34,7 @@ export const enumChildMessageTypeEnum = {
   EMH: 29, //病历
   ANY: 30, //自定义类型
   ZJ: 31, //诊间预约
-  DSO: 32 //处置单
+  DSO: 32, //处置单
+  SV: 33, //终止诊室
+  CV: 33, //取消问诊
 }

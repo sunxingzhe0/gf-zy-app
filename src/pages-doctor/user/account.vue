@@ -45,7 +45,7 @@
         <view class="orderItem flex-between">
           <view class="title">科室</view>
           <view class="flex-start-center rightInfo">
-            <view>{{ userInfo.deptName }}</view>
+            <view>{{ userInfo.deptName || '' }}</view>
           </view>
         </view>
         <view class="orderItem flex-between">
@@ -203,37 +203,33 @@ export default {
   methods: {
     // 上传头像
     upImg() {
-      let that = this
       uni.chooseImage({
         count: 1,
-        success: chooseImageRes => {
-          const tempFilePaths = chooseImageRes.tempFilePaths
-          upload(tempFilePaths[0]).then(async res => {
+        success: chooseImageRes =>
+          upload(chooseImageRes.tempFilePaths[0]).then(async res => {
             console.log(res.body)
             await changeAvatar({
               avatar: res.body,
             })
-            that.$store.commit('avatar', res.body)
-          })
-        },
+            this.$store.commit('avatar', res.body)
+          }),
       })
     },
     goto(url) {
       uni.navigateTo({
-        url: url,
+        url,
       })
     },
     reload() {
       this.$store.dispatch('loginInfo')
     },
     signOut() {
-      const that = this
       uni.showModal({
         title: '确认退出账号?',
-        success(res) {
+        success: res => {
           if (res.confirm) {
-            that.webSocket.close()
-            that.$store.dispatch('signOut').then(() => {
+            this.webSocket.close()
+            this.$store.dispatch('signOut').then(() => {
               uni.reLaunch({
                 url: '/pages/login/login',
               })

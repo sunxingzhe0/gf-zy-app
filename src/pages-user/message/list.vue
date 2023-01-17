@@ -12,10 +12,7 @@
           :options="options"
           @click="handler($event, item.id)"
         >
-          <view
-            class="list box-shadow flex-between"
-            @click="list[index].show = !item.show"
-          >
+          <view class="list box-shadow flex-between" @click="handelItem(item)">
             <view :class="['listImg', item.readed ? 'read' : '']"
               ><text class="iconfont icon-tongzhi"></text
             ></view>
@@ -42,7 +39,12 @@
                     >
                   </template>
                   <view
-                    v-else
+                    v-else-if="
+                      item.notice !== 'USER_231' &&
+                        item.notice !== 'USER_241' &&
+                        item.notice !== 'USER_251' &&
+                        item.notice !== 'USER_22'
+                    "
                     class="handle-button"
                     @click.stop="info(item, index)"
                   >
@@ -67,7 +69,10 @@ import {
   readNotice,
   batchRead,
   replyAuth,
+  getMsgOrderType,
 } from '@/common/request/userCenter'
+import { getUserDetail } from '@/common/request/userAppointment'
+import { getToUrl } from './urleum'
 export default {
   data() {
     return {
@@ -97,6 +102,18 @@ export default {
     }
   },
   methods: {
+    async handelItem(item) {
+      // this.list[index].show = !item.show
+
+      this.$set(item, 'show', !item.show)
+
+      await readNotice({
+        noticeId: item.id,
+      })
+      // this.list[index].readed = true
+      this.$set(item, 'readed', true)
+      this.$store.dispatch('getMessge', true)
+    },
     //消息列表
     async getqueryAnyData() {
       const list = await queryAnyData({
@@ -109,6 +126,7 @@ export default {
       )
       this.pages = list.pages
       this.more = list.pages > 1 ? 'more' : 'noMore'
+      this.currentNum === list.pages && (this.more = 'noMore')
     },
     async handler(event, id) {
       await delNotice({
@@ -127,33 +145,92 @@ export default {
       })
       this.list[index].readed = true
       this.$store.dispatch('getMessge', true)
-      const val = parseInt(row.notice.split('_')[1])
-      if (row.notice.split('_')[0] == 'ALL') return
 
-      if (val < 5) {
+      //能查类型的枚举项
+      const TYPES = [
+        'USER_01',
+        'USER_02',
+        'USER_03',
+        'USER_04',
+        'USER_05',
+        'USER_11',
+        'USER_12',
+        'USER_13',
+        'USER_14',
+        'USER_15',
+        'DOCTOR_01',
+        'DOCTOR_02',
+        'DOCTOR_03',
+        'DOCTOR_04',
+        'DOCTOR_05',
+        'DOCTOR_06',
+        'DOCTOR_08',
+        'DOCTOR_10',
+        'DOCTOR_11',
+        'YF_01',
+        'YF_02',
+        'YF_03',
+        'YF_04',
+        'YF_05',
+      ]
+
+      //获取订单类型
+      if (TYPES.includes(row.notice)) {
+        const type = await getMsgOrderType({ orderId: row.bizId })
+        console.log('跳转路径', getToUrl(row, type))
+        /*  */
+        //预约挂号详情跳转前先判断是否存在详情
+        const reg = new RegExp('/pages-user/myAppointment/detail')
+        if (reg.test(getToUrl(row, type))) {
+          const res = await getUserDetail({ orderId: row.bizId })
+          if (res === true) {
+            return uni.showToast({ title: '该订单已失效！', icon: 'none' })
+          }
+        }
+        /*  */
         uni.navigateTo({
-          url:
-            row.bizId.indexOf('DH') > -1
-              ? '/pages-user/doctorAdvice/detail?disOrderId=' + row.bizId
-              : row.bizId.indexOf('DA') > -1
-              ? '/pages-user/myAppointment/detail?orderId=' + row.bizId
-              : '/pages-user/serviceOrder/detail?orderId=' + row.bizId,
+          url: getToUrl(row, type),
         })
-      } else if (val == 17) {
-        return
-      } else if (val == 20) {
+      } else {
         uni.navigateTo({
-          url: `/pages-user/message/detail?title=${row.title}&createtime=${row.createTime}&content=${row.content}`,
-        })
-      } else if ((val > 4 && val < 11) || val > 13) {
-        uni.navigateTo({
-          url: '/pages-user/chat/chat?orderId=' + row.bizId,
-        })
-      } else if (val > 10 && val < 14) {
-        uni.navigateTo({
-          url: '/pages-user/prescriptionOrder/detail?id=' + row.bizId,
+          url: getToUrl(row, ''),
         })
       }
+
+      // const val = parseInt(row.notice.split('_')[1])
+      // if (row.notice.split('_')[0] == 'ALL') return
+      // if (row.notice === 'ZY_USER_04') {
+      //   uni.navigateTo({
+      //     url: '/pages-zy/inpatientServices/deposit?bizId=' + row.bizId,
+      //   })
+      // }
+      // if (val < 5) {
+      //   uni.navigateTo({
+      //     url:
+      //       row.bizId.indexOf('DH') > -1
+      //         ? '/pages-user/doctorAdvice/detail?bizId=' + row.bizId
+      //         : row.bizId.indexOf('DA') > -1
+      //         ? '/pages-user/myAppointment/detail?bizId=' + row.bizId
+      //         : row.bizId.indexOf('PR') > -1
+      //         ? '/pages-user/prescriptionOrder/detail?bizId=' + row.bizId
+      //         : '/pages-user/serviceOrder/detail?bizId=' + row.bizId,
+      //   })
+      // } else if (val == 17) {
+      //   return
+      // } else if (val == 20) {
+      //   console.log(val, '-------------------------')
+      //   uni.navigateTo({
+      //     url: `/pages-user/message/detail?title=${row.title}&createtime=${row.createTime}&content=${row.content}`,
+      //   })
+      // } else if ((val > 4 && val < 11) || val > 13) {
+      //   uni.navigateTo({
+      //     url: '/pages-user/chat/chat?bizId=' + row.bizId,
+      //   })
+      // } else if (val > 10 && val < 14) {
+      //   uni.navigateTo({
+      //     url: '/pages-user/prescriptionOrder/detail?bizId=' + row.bizId,
+      //   })
+      // }
     },
     allread() {
       uni.showModal({
@@ -184,6 +261,7 @@ export default {
         noticeId: data.id,
       })
       this.list.splice(index, 1)
+      this.$set(data, 'show', false)
     },
   },
 }
@@ -194,7 +272,7 @@ export default {
   padding: 20rpx 0;
   padding-bottom: 100rpx;
 
-  /deep/.uni-swipe_box {
+  ::v-deep.uni-swipe_box {
     background: none;
   }
 

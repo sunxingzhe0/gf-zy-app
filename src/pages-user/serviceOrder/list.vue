@@ -37,7 +37,7 @@
         v-for="(item, index) in data"
         :key="index"
         @click="
-          gotoInfo('/pages-user/serviceOrder/detail?orderId=' + item.orderId)
+          gotoInfo('/pages-user/serviceOrder/detail?bizId=' + item.orderId)
         "
       >
         <view class="list_a flex-between">
@@ -424,7 +424,7 @@ export default {
     }
   }
 
-  /deep/.uni-countdown__number {
+  ::v-deep.uni-countdown__number {
     font-size: 26rpx;
     width: auto;
     height: auto;

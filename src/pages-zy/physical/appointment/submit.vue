@@ -68,6 +68,7 @@
     },
     data() {
       return {
+        isClick:true,
         isPay: false,
         // 检查类型
         checkType: ['男士', '未婚女士', '已婚女士'],
@@ -118,6 +119,10 @@
       },
       //支付
       paySubmit(e) {
+        if (!this.isClick){
+        return uni.showToast({ title: '请勿重复点击', icon: 'none' })
+      }
+      this.isClick = false
         regTj({
           payment: e,
           patientId: this.perId,
@@ -130,6 +135,7 @@
           packageFee:this.amount,
           packageName:this.title
         }).then(data => {
+      this.isClick = true
           this.$refs.pay.payTypeC(data)
         })
       },

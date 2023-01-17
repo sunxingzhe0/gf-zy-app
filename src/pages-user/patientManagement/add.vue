@@ -4,40 +4,321 @@
     <video-invitation />
     <!--主页按钮-->
     <homeIcom />
-    <view class="step">
-      <view class="flex-between">
-        <view :class="[active >= 0 ? 'on' : '', 'step_item']">
-          <view class="step_num">1</view>
-          <view class="step_title">手机验证</view>
-        </view>
-        <view :class="[active >= 1 ? 'on' : '', 'br']"></view>
-        <view :class="[active >= 1 ? 'on' : '', 'step_item']">
-          <view class="step_num">2</view>
-          <view class="step_title">身份验证</view>
-        </view>
-        <view :class="[active >= 2 ? 'on' : '', 'br']"></view>
-        <view :class="[active >= 2 ? 'on' : '', 'step_item']">
-          <view class="step_num">3</view>
-          <view class="step_title">资料填写</view>
-        </view>
-      </view>
-    </view>
+    <!-- 表单 -->
     <view
-      style="background: #fff;overflow: hidden; margin: 20rpx;"
+      style="background: #fff; overflow: hidden; margin: 20rpx "
       class="box-shadow"
-      v-if="active < 2"
     >
-      <uni-list class="inputWrap" v-if="active == 0">
-        <!-- style="padding-left: 0;" -->
+      <uni-list class="inputWrap">
+        <uni-list-item style="padding-left: 0" :show-arrow="false">
+          <view class="flex-between">
+            <view class="title">
+              <text class="red">*</text>
+              年龄段
+            </view>
+            <view class="flex-start-center flex_1">
+              <uni-tag
+                text="成人"
+                :class="[formData.child == false ? 'on' : '', 'tag']"
+                @click="radioChange('child', false)"
+                circle
+              ></uni-tag>
+              <uni-tag
+                text="儿童"
+                :class="[formData.child == true ? 'on' : '', 'tag']"
+                @click="radioChange('child', true)"
+                circle
+              ></uni-tag>
+            </view>
+          </view>
+        </uni-list-item>
+
+        <uni-list-item style="padding-left: 0" :show-arrow="false">
+          <view class="flex-between">
+            <view class="title">
+              <text class="red">*</text>
+              姓名
+            </view>
+            <input
+              v-model="formData.name"
+              :disabled="isFromBack || !formData.wechatCode"
+              class="flex_1"
+              placeholder-class="input_pla"
+              placeholder="请输入就诊人姓名"
+            />
+          </view>
+        </uni-list-item>
+
+        <uni-list-item style="padding-left: 0" :show-arrow="false">
+          <view class="flex-between">
+            <view class="title">
+              <text class="red">*</text>
+              身份证
+            </view>
+            <input
+              v-model="formData.idCard"
+              :disabled="isFromBack || !formData.wechatCode"
+              class="flex_1"
+              @change="changeUserVal"
+              placeholder-class="input_pla"
+              placeholder="请输入就诊人身份证"
+            />
+          </view>
+        </uni-list-item>
+
+        <!-- <uni-list-item style="padding-left: 0" :show-arrow="false">
+          <view class="flex-between">
+            <view class="title">
+              <text class="red">*</text>
+              性别
+            </view>
+            <picker
+              class="flex_1"
+              disabled
+              @change="bindPickerChange($event, 'sex')"
+              :value="index"
+              :range="sexList"
+              range-key="lable"
+            >
+              <input
+                v-model="sexList[formData.sex].lable"
+                disabled
+                class="flex_1"
+                placeholder-class="input_pla"
+                placeholder="请选择就诊人性别"
+              />
+            </picker>
+          </view>
+        </uni-list-item> -->
+
+        <!-- <uni-list-item style="padding-left: 0" :show-arrow="false">
+          <view class="flex-between">
+            <view class="title">
+              <text class="red">*</text>
+              出生日期
+            </view>
+            <input
+              v-model="formData.birthDay"
+              disabled
+              class="flex_1"
+              placeholder-class="input_pla"
+              placeholder="请输入就诊人出生日期"
+            />
+          </view>
+        </uni-list-item> -->
+
+        <uni-list-item style="padding-left: 0" :show-arrow="false">
+          <view class="flex-between">
+            <view class="title">
+              <text class="red">*</text>
+              民族
+            </view>
+            <picker
+              mode="selector"
+              class="flex_1"
+              :range="nations"
+              :disabled="!formData.wechatCode"
+              :value="formData.nation"
+              @change="e => (this.formData.nation = nations[e.detail.value])"
+            >
+              <input
+                v-model="formData.nation"
+                :disabled="true"
+                placeholder-class="input_pla"
+                placeholder="请输入就诊人民族"
+              />
+            </picker>
+          </view>
+        </uni-list-item>
+
+        <uni-list-item
+          v-if="!formData.child"
+          style="padding-left: 0"
+          :show-arrow="false"
+        >
+          <view class="flex-between">
+            <view class="title">
+              <text class="red">*</text>
+              职业
+            </view>
+            <picker
+              class="flex_1"
+              mode="selector"
+              :disabled="!formData.wechatCode"
+              :range="occupation"
+              :value="formData.careerName"
+              @change="
+                e => (this.formData.careerName = occupation[e.detail.value])
+              "
+            >
+              <input
+                :value="formData.careerName"
+                :disabled="true"
+                class="flex_1"
+                placeholder-class="input_pla"
+                placeholder="选择职业"
+              />
+            </picker>
+          </view>
+        </uni-list-item>
+
+        <!-- <uni-list-item style="padding-left: 0" :show-arrow="false">
+          <view class="flex-between">
+            <view class="title">
+              <text class="red">*</text>
+              籍贯
+            </view>
+            <pick-regions
+              class="flex_1"
+              :defaultRegion="defaultRegion"
+              @getRegion="handleGetRegion($event, 'address')"
+            >
+              <input
+                v-model="formData.address"
+                class="flex_1"
+                disabled
+                placeholder-class="input_pla"
+                placeholder="请选择籍贯"
+              />
+            </pick-regions>
+          </view>
+        </uni-list-item> -->
+
+        <!-- <uni-list-item style="padding-left: 0" :show-arrow="false">
+          <view class="flex-between">
+            <view class="title">
+              <text class="red">*</text>
+              户口地址
+            </view>
+            <input
+              v-model="formData.liveAddress"
+              class="flex_1"
+              placeholder-class="input_pla"
+              placeholder="请输入户口地址"
+            />
+          </view>
+        </uni-list-item> -->
+
+        <uni-list-item style="padding-left: 0" :show-arrow="false">
+          <view class="flex-between">
+            <view class="title">
+              <text class="red">*</text>
+              现住址
+            </view>
+            <input
+              v-model="formData.addressNow"
+              :disabled="!formData.wechatCode"
+              class="flex_1"
+              placeholder-class="input_pla"
+              placeholder="请输入现住址：如xx路xx号"
+            />
+          </view>
+        </uni-list-item>
+
+        <uni-list-item
+          v-if="formData.child"
+          style="padding-left: 0"
+          :show-arrow="false"
+        >
+          <view class="flex-between">
+            <view class="title">
+              <text class="red">*</text>
+              监护人姓名
+            </view>
+            <input
+              v-model="formData.guardName"
+              :disabled="!formData.wechatCode"
+              class="flex_1"
+              placeholder-class="input_pla"
+              placeholder="请输入监护人姓名"
+            />
+          </view>
+        </uni-list-item>
+
+        <uni-list-item
+          v-if="formData.child"
+          style="padding-left: 0"
+          :show-arrow="false"
+        >
+          <view class="flex-between">
+            <view class="title">
+              <text class="red">*</text>
+              监护人身份证
+            </view>
+            <input
+              v-model="formData.guardIdCard"
+              :disabled="!formData.wechatCode"
+              class="flex_1"
+              placeholder-class="input_pla"
+              placeholder="请输入监护人身份证"
+            />
+          </view>
+        </uni-list-item>
+
+        <uni-list-item
+          v-if="formData.child"
+          style="padding-left: 0"
+          :show-arrow="false"
+        >
+          <view class="flex-between">
+            <view class="title">
+              <text class="red">*</text>
+              监护人关系
+            </view>
+            <picker
+              class="flex_1"
+              mode="selector"
+              :disabled="!formData.wechatCode"
+              :range="crelations"
+              :value="formData.guardRelation"
+              @change="e => (this.formData.guardRelation = e.detail.value)"
+            >
+              <input
+                :value="crelations[formData.guardRelation]"
+                :disabled="true"
+                class="flex_1"
+                placeholder-class="input_pla"
+                placeholder="请选择监护人和患者之间的关系"
+              />
+            </picker>
+          </view>
+        </uni-list-item>
+
+        <uni-list-item style="padding-left: 0" :show-arrow="false">
+          <view class="flex-between">
+            <view class="title">
+              <text class="red">*</text>
+              关系
+            </view>
+            <picker
+              class="flex_1"
+              mode="selector"
+              :disabled="!formData.wechatCode"
+              :range="relations"
+              :value="formData.relation"
+              @change="e => (this.formData.relation = e.detail.value)"
+            >
+              <input
+                :value="relations[formData.relation]"
+                :disabled="true"
+                class="flex_1"
+                placeholder-class="input_pla"
+                placeholder="选择为谁申领"
+              />
+            </picker>
+          </view>
+        </uni-list-item>
+
         <uni-list-item :show-arrow="false">
           <view class="flex-between">
             <view class="title">
-              手机号
               <text class="red">*</text>
+              手机号
             </view>
             <input
               type="number"
-              v-model="one.phone"
+              v-model="formData.phone"
+              :disabled="!formData.wechatCode"
               class="flex_1"
               maxlength="11"
               placeholder-class="input_pla"
@@ -45,17 +326,18 @@
             />
           </view>
         </uni-list-item>
-        <!-- style="padding-left: 0;" -->
+
         <uni-list-item :show-arrow="false">
           <view class="flex-between">
             <view class="title">
-              验证码
               <text class="red">*</text>
+              验证码
             </view>
             <input
+              :disabled="!formData.wechatCode"
               type="number"
               class="flex_1"
-              v-model="one.code"
+              v-model="formData.phoneCode"
               placeholder-class="input_pla"
               placeholder="请输入验证码"
             />
@@ -66,820 +348,286 @@
           </view>
         </uni-list-item>
       </uni-list>
-      <uni-list class="inputWrap" v-if="active == 1">
-        <uni-list-item style="padding-left: 0;" :show-arrow="false">
-          <view class="flex-between">
-            <view class="title">
-              年龄段
-              <text class="red">*</text>
-            </view>
-            <view class="flex-start-center flex_1">
-              <uni-tag
-                text="成人"
-                :class="[two.child == false ? 'on' : '', 'tag']"
-                @click="radioChange('child', false)"
-                circle
-              ></uni-tag>
-              <uni-tag
-                text="儿童"
-                :class="[two.child == true ? 'on' : '', 'tag']"
-                @click="radioChange('child', true)"
-                circle
-              ></uni-tag>
-            </view>
-          </view>
-        </uni-list-item>
-        <uni-list-item style="padding-left: 0;" :show-arrow="false">
-          <view class="flex-between">
-            <view class="title">
-              姓名
-              <text class="red">*</text>
-            </view>
-            <input
-              v-model="two.name"
-              class="flex_1"
-              placeholder-class="input_pla"
-              placeholder="请输入就诊人姓名"
-            />
-          </view>
-        </uni-list-item>
-        <uni-list-item style="padding-left: 0;" :show-arrow="false">
-          <view class="flex-between">
-            <view class="title">
-              身份证
-              <text class="red">*</text>
-            </view>
-            <input
-              v-model="two.idCard"
-              class="flex_1"
-              placeholder-class="input_pla"
-              placeholder="请输入就诊人身份证"
-            />
-          </view>
-        </uni-list-item>
-        <uni-list-item
-          style="padding-left: 0;"
-          :show-arrow="false"
-          v-if="two.child"
-        >
-          <view class="flex-between">
-            <view class="title">
-              监护人姓名
-              <text class="red">*</text>
-            </view>
-            <input
-              v-model="two.guardName"
-              class="flex_1"
-              placeholder-class="input_pla"
-              placeholder="请输入监护人姓名"
-            />
-          </view>
-        </uni-list-item>
-        <uni-list-item
-          style="padding-left: 0;"
-          :show-arrow="false"
-          v-if="two.child"
-        >
-          <view class="flex-between">
-            <view class="title">
-              监护人身份证
-              <text class="red">*</text>
-            </view>
-            <input
-              v-model="two.guardIdCard"
-              class="flex_1"
-              placeholder-class="input_pla"
-              placeholder="请输入监护人身份证"
-            />
-          </view>
-        </uni-list-item>
-        <uni-list-item
-          style="padding-left: 0;"
-          :show-arrow="false"
-          v-if="two.child"
-        >
-          <view class="flex-between">
-            <view class="title">
-              关系
-              <text class="red">*</text>
-            </view>
-            <input
-              v-model="two.relation"
-              class="flex_1"
-              placeholder-class="input_pla"
-              placeholder="请输入监护人和患者之间的关系"
-            />
-          </view>
-        </uni-list-item>
-        <!-- <uni-list-item style="padding-left: 0;" :show-arrow="false">
-					<view class="flex-between">
-						<view class="title">
-							就诊卡
-							<text class="red">*</text>
-						</view>
-						<view class="flex-start-center flex_1">
-							<uni-tag text="已有" :class="[two.isVisitcard == 1 ? 'on' : '', 'tag']" @click="radioChange('isVisitcard', 1)" circle></uni-tag>
-							<uni-tag text="没有" :class="[two.isVisitcard == 2 ? 'on' : '', 'tag']" @click="radioChange('isVisitcard', 2)" circle></uni-tag>
-						</view>
-					</view>
-				</uni-list-item> -->
-        <!-- <uni-list-item style="padding-left: 0;" :show-arrow="false" v-if="two.isVisitcard == 1">
-					<view class="flex-between">
-						<view class="title">
-							就诊卡/社保卡
-							<text class="red">*</text>
-						</view>
-						<input v-model="two.patientCard" class="flex_1" placeholder-class="input_pla" placeholder="请输入就诊卡号或社保卡号" />
-					</view>
-				</uni-list-item> -->
-      </uni-list>
-    </view>
-    <view
-      style="background: #fff;overflow: hidden; margin: 20rpx;"
-      class="box-shadow"
-      v-if="active == 2 && form.child"
-    >
-      <uni-list class="inputWrap">
-        <uni-list-item
-          style="padding-left: 0;"
-          v-if="form.child"
-          :show-arrow="false"
-          ><view class="title2">1.监护人信息</view></uni-list-item
-        >
-        <uni-list-item style="padding-left: 0;" :show-arrow="false">
-          <view class="flex-between">
-            <view class="title">
-              姓名
-              <text class="red">*</text>
-            </view>
-            <input
-              v-model="form.guardName"
-              disabled
-              class="flex_1"
-              placeholder-class="input_pla"
-              placeholder="请输入就诊人姓名"
-            />
-          </view>
-        </uni-list-item>
-        <uni-list-item
-          style="padding-left: 0;"
-          :show-arrow="false"
-          v-if="form.child"
-        >
-          <view class="flex-between">
-            <view class="title">
-              关系
-              <text class="red">*</text>
-            </view>
-            <input
-              v-model="form.relation"
-              disabled
-              class="flex_1"
-              placeholder-class="input_pla"
-              placeholder="请输入监护人和患者之间的关系"
-            />
-          </view>
-        </uni-list-item>
-        <!-- <uni-list-item style="padding-left: 0;" :show-arrow="false">
-					<view class="flex-between">
-						<view class="title">
-							民族
-							<text class="red">*</text>
-						</view>
-						<input v-model="form.guardianNation" disabled class="flex_1" placeholder-class="input_pla" placeholder="请输入就诊人民族" />
-					</view>
-				</uni-list-item> -->
-        <uni-list-item style="padding-left: 0;" :show-arrow="false">
-          <view class="flex-between">
-            <view class="title">
-              性别
-              <text class="red">*</text>
-            </view>
-            <picker
-              class="flex_1"
-              disabled
-              @change="bindPickerChange($event, 'guardSex')"
-              :value="index"
-              :range="sexList"
-              range-key="lable"
-            >
-              <input
-                v-model="sexList[form.guardSex].lable"
-                disabled
-                class="flex_1"
-                placeholder-class="input_pla"
-                placeholder="请输入就诊人性别"
-              />
-            </picker>
-          </view>
-        </uni-list-item>
-        <uni-list-item style="padding-left: 0;" :show-arrow="false">
-          <view class="flex-between">
-            <view class="title">
-              出生日期
-              <text class="red">*</text>
-            </view>
-            <input
-              v-model="form.guardBirthDay"
-              disabled
-              class="flex_1"
-              placeholder-class="input_pla"
-              placeholder="请输入就诊人出生日期"
-            />
-          </view>
-        </uni-list-item>
-        <uni-list-item style="padding-left: 0;" :show-arrow="false">
-          <view class="flex-between">
-            <view class="title">
-              地址
-              <text class="red">*</text>
-            </view>
-            <input
-              v-model="form.guardAddress"
-              disabled
-              class="flex_1"
-              placeholder-class="input_pla"
-              placeholder="请输入就诊人地址"
-            />
-          </view>
-        </uni-list-item>
-        <uni-list-item style="padding-left: 0;" :show-arrow="false">
-          <view class="flex-between">
-            <view class="title">
-              电话
-              <text class="red">*</text>
-            </view>
-            <input
-              type="number"
-              v-model="form.guardPhone"
-              disabled
-              class="flex_1"
-              maxlength="11"
-              placeholder-class="input_pla"
-              placeholder="请输入就诊人电话"
-            />
-          </view>
-        </uni-list-item>
-        <uni-list-item style="padding-left: 0;" :show-arrow="false">
-          <view class="flex-between">
-            <view class="title">
-              身份证
-              <text class="red">*</text>
-            </view>
-            <input
-              v-model="form.guardIdCard"
-              disabled
-              class="flex_1"
-              placeholder-class="input_pla"
-              placeholder="请输入就诊人身份证"
-            />
-          </view>
-        </uni-list-item>
-      </uni-list>
-    </view>
-
-    <view
-      style="background: #fff;overflow: hidden; margin: 20rpx;"
-      class="box-shadow"
-      v-if="active == 2"
-    >
-      <uni-list :class="['inputWrap', form.child ? 'childInfo' : '']">
-        <uni-list-item
-          style="padding-left: 0;"
-          v-if="form.child"
-          :show-arrow="false"
-          ><view class="title2">2.就诊人信息</view></uni-list-item
-        >
-        <uni-list-item style="padding-left: 0;" :show-arrow="false">
-          <view class="flex-between">
-            <view class="title">
-              姓名
-              <text class="red">*</text>
-            </view>
-            <input
-              v-model="form.name"
-              :disabled="!form.child"
-              class="flex_1"
-              placeholder-class="input_pla"
-              placeholder="请输入就诊人姓名"
-            />
-          </view>
-        </uni-list-item>
-        <!-- <uni-list-item style="padding-left: 0;" :show-arrow="false">
-					<view class="flex-between">
-						<view class="title">
-							民族
-							<text class="red">*</text>
-						</view>
-						<input v-model="form.nation" disabled class="flex_1" placeholder-class="input_pla" placeholder="请输入就诊人民族" />
-					</view>
-				</uni-list-item> -->
-        <uni-list-item style="padding-left: 0;" :show-arrow="false">
-          <view class="flex-between">
-            <view class="title">
-              性别
-              <text class="red">*</text>
-            </view>
-            <picker
-              class="flex_1"
-              :disabled="!form.child"
-              @change="bindPickerChange($event, 'sex')"
-              :value="index"
-              :range="sexList"
-              range-key="lable"
-            >
-              <input
-                v-model="sexList[form.sex].lable"
-                disabled
-                class="flex_1"
-                placeholder-class="input_pla"
-                placeholder="请输入就诊人性别"
-              />
-            </picker>
-          </view>
-        </uni-list-item>
-        <uni-list-item style="padding-left: 0;" :show-arrow="false">
-          <view class="flex-between">
-            <view class="title">
-              出生日期
-              <text class="red">*</text>
-            </view>
-            <picker
-              mode="date"
-              class="flex_1"
-              :disabled="!form.child"
-              :value="form.birthDay"
-              @change="bindPickerChange($event, 'birthDay')"
-            >
-              <input
-                v-model="form.birthDay"
-                disabled
-                class="flex_1"
-                placeholder-class="input_pla"
-                placeholder="请输入就诊人出生日期"
-              />
-            </picker>
-          </view>
-        </uni-list-item>
-        <uni-list-item style="padding-left: 0;" :show-arrow="false">
-          <view class="flex-between">
-            <view class="title">
-              地址
-              <text class="red">*</text>
-            </view>
-            <input
-              v-model="form.address"
-              disabled
-              class="flex_1"
-              v-if="!form.child"
-              placeholder-class="input_pla"
-              placeholder="请输入就诊人地址"
-            />
-            <pick-regions
-              class="flex_1"
-              v-else
-              :disabled="!form.child"
-              @getRegion="handleGetRegion($event, 'address')"
-            >
-              <input
-                v-model="form.address"
-                class="flex_1"
-                disabled
-                placeholder-class="input_pla"
-                placeholder="请选择就诊人地址"
-              />
-            </pick-regions>
-          </view>
-        </uni-list-item>
-        <uni-list-item style="padding-left: 0;" :show-arrow="false">
-          <view class="flex-between">
-            <view class="title">
-              电话
-              <text class="red">*</text>
-            </view>
-            <input
-              type="number"
-              :disabled="!form.child"
-              v-model="form.phone"
-              class="flex_1"
-              maxlength="11"
-              placeholder-class="input_pla"
-              placeholder="请输入就诊人电话"
-            />
-          </view>
-        </uni-list-item>
-        <uni-list-item style="padding-left: 0;" :show-arrow="false">
-          <view class="flex-between">
-            <view class="title">
-              身份证
-              <text class="red">*</text>
-            </view>
-            <input
-              v-model="form.idCard"
-              :disabled="!form.child"
-              class="flex_1"
-              placeholder-class="input_pla"
-              placeholder="请输入就诊人身份证"
-            />
-          </view>
-        </uni-list-item>
-        <uni-list-item
-          style="padding-left: 0;"
-          :show-arrow="false"
-          v-if="form.child"
-        >
-          <view class="flex-between">
-            <view class="title">
-              出生地
-              <text class="red">*</text>
-            </view>
-            <pick-regions
-              class="flex_1"
-              @getRegion="handleGetRegion($event, 'nativePlace')"
-            >
-              <input
-                v-model="form.nativePlace"
-                class="flex_1"
-                disabled
-                placeholder-class="input_pla"
-                placeholder="请选择出生地"
-              />
-            </pick-regions>
-          </view>
-        </uni-list-item>
-        <uni-list-item style="padding-left: 0;" :show-arrow="false">
-          <view class="flex-between">
-            <view class="title">
-              现居地
-              <text class="red">*</text>
-            </view>
-            <pick-regions
-              class="flex_1"
-              @getRegion="handleGetRegion($event, 'addressNow')"
-            >
-              <view class="flex_1">
-                <text v-if="form.addressNow">{{ form.addressNow }}</text>
-                <text v-else style="color: #666;">请选择现居地</text>
-              </view>
-            </pick-regions>
-          </view>
-        </uni-list-item>
-        <uni-list-item style="padding-left: 0;" :show-arrow="false">
-          <view class="flex-between">
-            <view class="title">
-              常居地
-              <text class="red">*</text>
-            </view>
-            <input
-              v-model="form.liveAddress"
-              class="flex_1"
-              placeholder-class="input_pla"
-              placeholder="请输入常居地"
-            />
-          </view>
-        </uni-list-item>
-      </uni-list>
-    </view>
-    <view class="tipWrap">
-      <view class="tipText" v-if="active == 1 && form.isVisitcard == 1">
-        <text>注：</text>
-        若输入社保卡号，该患者社保卡需曾经在挂号窗口进行挂号
-      </view>
     </view>
     <button
-      class="submit_btn next"
-      @click="next"
+      :disabled="!formData.phoneCode"
+      :class="formData.phoneCode ? '' : 'disabled-class'"
+      class="submit_btn"
       type="primary"
-      v-if="active < 2"
+      @click="submit"
     >
-      下一步
-    </button>
-    <button class="submit_btn" v-if="active > 1" type="primary" @click="submit">
       提交
     </button>
-    <uni-popup ref="select" class="selectWrap" type="bottom" :maskClick="false">
-      <view class="selectPer">
-        <view class="title">请选择您的就诊卡</view>
-        <uni-icons
-          type="close"
-          class="closeIcon"
-          color="#999"
-          size="20"
-          @click="closePer"
-        ></uni-icons>
-        <uni-notice-bar
-          text="温馨提示：一旦选择了就诊卡，则只能使用该就诊卡进行预约挂号等服务。如需更换，则需要本人线下进行人工办理。"
-        ></uni-notice-bar>
-        <view class="selectList">
-          <view class="uni-list">
-            <radio-group @change="perChange">
-              <label
-                class="uni-list-cell uni-list-cell-pd"
-                v-for="(item, index) in cardList"
-                :key="index"
-              >
-                <view
-                  ><radio
-                    :value="item.cardNo"
-                    :color="themeColor"
-                    :checked="item.cardNo === perCardId"
-                /></view>
+    <view class="botton-msg" @click="toSelectCard">已有电子健康卡</view>
 
-                <view class="flex_1 perMain">
-                  <view>就诊卡号：{{ item.cardNo }}</view>
-                  <view class="time"
-                    >最近使用时间：{{ item.createDtime || '-' }}</view
-                  >
-                </view>
-                <view class="perPrice">卡内余额：￥{{ item.balance }}</view>
-              </label>
-            </radio-group>
-          </view>
-        </view>
-        <button
-          class="submit_btn next"
-          type="primary"
-          style="margin-left:0 ; border-radius: 0; width:100%;"
-          @click="selectCard"
-        >
-          确认
-        </button>
-      </view>
-    </uni-popup>
-    <uni-popup ref="popup" type="center" :maskClick="false">
-      <view class="popTip">
-        <view class="popTitle">新增就诊卡</view>
-        <view class="popMain">
-          <view
-            >您还未在{{
-              userInfo.orgName
-            }}办理过就诊卡，系统将为您创建一张新的就诊卡。</view
+    <uni-popup ref="notice" :mask-click="false">
+      <view class="dialog-content">
+        <view class="dialogTitle">{{ '提示' }}</view>
+        <scroll-view class="textBox" :scroll-y="true">
+          <!-- <view class="title">{{ghNotice.title}}</view> -->
+          <view class="text">当前用户未授权，请前往微信授权登录健康卡 </view>
+        </scroll-view>
+        <view class="noticeBtn">
+          <!-- 健康卡登录组件 -->
+          <health-card-login
+            v-show="!formData.wechatCode"
+            :authLogin="true"
+            :encrypt="true"
+            :wechatcode="true"
+            @authFail="authFail"
+            @authCancel="authCancel"
+            @authSucess="authSuccess"
           >
-          <view
-            >一旦创建了就诊卡，则只能使用该就诊卡进行预约挂号等服务。如需更换，则需要本人线下进行人工办理。</view
-          >
+            <!-- 组件slot，点击该区域跳转微信授权 -->
+            <view @click.stop="toWey" style="width:350px;line-height:44px"
+              >确认</view
+            >
+            <!-- 注意：开发者工具上暂不支持调试插件功能页，请在真机上测试 -->
+          </health-card-login>
         </view>
-        <view class="popBtn" @click="addPatient">确 定</view>
       </view>
     </uni-popup>
   </view>
 </template>
 
 <script>
-import pickRegions from '@/components/pick-regions/pick-regions.vue'
-import {
-  validatePhone,
-  fullPatientInfo,
-  finishAuth,
-  confirmPatientInfo,
-  confirmCard,
-} from '@/common/request/userCenter'
+const healthCardPlugins = requirePlugin('healthCardPlugins')
 import { verificationCode } from '@/common/request/index'
-import {idcard,GetAgeAndSexByIDNum} from '@/common/util.js'
+import { idcard, GetAgeAndSexByIDNum } from '@/common/util.js'
+import {
+  getIdCardInfo,
+  submitCardInfo,
+  getDictList,
+} from '@/common/request/userCenter'
+import nations from './nations'
 export default {
-  components: { pickRegions },
   data() {
+    const relations = ['本人', '父母', '子女', '夫妻', '亲属', '朋友', '其他']
+    const crelations = ['父母', '子女', '夫妻', '亲属', '朋友', '其他']
     return {
+      defaultRegion: ['重庆市', '市辖区', '万州区'],
+      intoList: '', //是否来源于健康卡管理页面
+      timeNum: 3,
+      isFirstEnter: false,
+      isFromBack: false, //是否是选择健康卡后返回
+      relations,
+      crelations,
+      occupation: [], //职业
+      nations,
       themeColor: '#0AB2C1',
-      active: 0,
       timecode: 60,
       passClick: true,
       sexList: [
         { lable: '女', value: 0 },
         { lable: '男', value: 1 },
       ],
-      one: {
-        phone: '',
-        code: '',
-      },
-      two: {
-        child: false,
-        name: '',
-        idCard: '',
-        isVisitcard: 1,
-        guardName: '',
-        guardIdCard: '',
-        relation: '',
-        patientCard: '',
-      },
-      form: {
-        name: '',
+      formData: {
+        child: false, //是否儿童
+        name: '', //姓名
+        idCard: '', //身份证
+
         sex: '',
         birthDay: '',
-        address: '',
-        phone: '',
-        idCard: '',
-        nativePlace: '',
-        addressNow: '',
-        liveAddress: '',
+        nation: '汉族', //民族
+        careerName: '', //职业
+        address: '重庆市市辖区万州区', //籍贯
+        // liveAddress: '', //户口地址
+        addressNow: '', //现住址
+        guardName: '', //监护人姓名
+        guardIdCard: '', //监护人身份证
+        guardRelation: '', //监护人关系
+        relation: '0', //关系
+        phone: '', //手机号
+        phoneCode: '', //验证码
+        wechatCode: '', //微信身份码
       },
-      pikerName: '',
-      pikerVal: {
-        birthplace: [0, 0, 0],
-        residence: [0, 0, 0],
-      },
-      bizToken: '',
-      perCardId: '',
       cardList: [],
-      page: '',
+      perCardId: '',
     }
   },
-  computed: {
-    userInfo() {
-      return this.$store.state.userInfo
-    },
+
+  created() {
+    this.getDictList()
+    this.loginCard()
   },
   onLoad(options) {
-    if (options.page == 'DoctorDetail') {
-      this.page = options.page
+    if (options.intoList) {
+      this.intoList = options.intoList
     }
   },
-  methods: {
-    next() {
-      if (this.active < 1) {
-        if (this.one.phone == '') {
-          uni.showToast({
-            title: '请输入手机号',
-            icon: 'none',
-          })
-          return false
-        }
-        if (this.one.code == '') {
-          uni.showToast({
-            title: '请输入验证码',
-            icon: 'none',
-          })
-          return false
-        }
-        validatePhone(this.one).then(res => {
-          if (res) {
-            this.active += 1
-          }
-        })
-      } else {
-        if (this.active == 1) {
-          if (this.two.name == '') {
-            uni.showToast({
-              title: '请输入患者姓名',
-              icon: 'none',
-            })
-            return false
-          }
-          if (this.two.idCard == '') {
-            uni.showToast({
-              title: '请输入患者身份证',
-              icon: 'none',
-            })
-            return false
-          }
-          if (this.two.child) {
-            if (this.two.guardName == '') {
-              uni.showToast({
-                title: '请输入监护人姓名',
-                icon: 'none',
-              })
-              return false
-            }
-            if (this.two.guardIdCard == '') {
-              uni.showToast({
-                title: '请输入监护人身份证',
-                icon: 'none',
-              })
-              return false
-            }
-            if (this.two.relation == '') {
-              uni.showToast({
-                title: '请输入监护人和患者之间的关系',
-                icon: 'none',
-              })
-              return false
-            }
-          }
-          if(!idcard(this.two.idCard)){
-            uni.showToast({
-                title: '身份证号不存在',
-                icon: 'none',
-              })
-              return false
-          }
-          if(!this.two.child && GetAgeAndSexByIDNum(this.two.idCard)<18){
-            let isNext = false
-             uni.showModal({
-                title: '提示',
-                cancelText:'否',
-                confirmText:'是',
-                confirmColor:'0AB2C1',
-                content: '身份信息与当前选择的年龄段不符，是否切换年龄段为儿童？',
-                success: res=> {
-                    if (res.confirm) {
-                        this.two.child = true
-                        isNext = true
-                    } else if (res.cancel) {
-                        isNext = false
-                    }
-                }
-            });
-            return isNext
-          }
-          if(this.two.child && GetAgeAndSexByIDNum(this.two.idCard)>17){
-            let isNext = false
-             uni.showModal({
-                title: '提示',
-                content: '身份信息与当前选择的年龄段不符，是否切换年龄段为成人？',
-                cancelText:'否',
-                confirmText:'是',
-                confirmColor:'0AB2C1',
-                success:  res=> {
-                    if (res.confirm) {
-                        this.two.child = false
-                        isNext = true
-                    } else if (res.cancel) {
-                        isNext = false
-                    }
-                }
-            });
-            return isNext
-          }
-          // if (this.two.isVisitcard == 1) {
-          // 	if (this.two.patientCard == '') {
-          // 		uni.showToast({
-          // 			title: '请输入就诊卡号或社保卡号',
-          // 			icon: 'none'
-          // 		});
-          // 		return false;
-          // 	}
-          // }
+  onReady() {
+    this.isFirstEnter = true
+  },
+  onShow() {
+    if (this.isFirstEnter) {
+      this.loginCard()
+    }
+  },
+  mounted() {
+    uni.$on('updateCardInfo', data => {
+      console.log(data, '健康卡信息---------------')
+      this.isFromBack = true
+      const {
+        child,
+        name,
+        idCard,
+        birthDay,
+        sex,
+        nation,
+        address,
+        phone,
+      } = data
+      Object.assign(this.formData, {
+        child,
+        name,
+        idCard,
+        birthDay,
+        sex,
+        nation,
+        address:address||'重庆市市辖区万州区',
+        phone,
+      })
+    })
+  },
 
-          fullPatientInfo(this.two)
-            .then(res => {
-              if (res) {
-                this.bizToken = res
-                this.getfinishAuth(res)
-              }
+  methods: {
+    loginCard() {
+      healthCardPlugins.login(
+        (_, res) => {
+          if (res.result.type !== 3) {
+            // 用户在微信授权过，可直接获取登录信息
+            this.formData.wechatCode = res.result.wechatCode
+          } else {
+            // 用户未授权，需要用户同意授权
+            // 显示 healthCardLogin 登录组件，引导用户同意授权
+            // this.$refs.notice.open()
+            uni.showToast({
+              title: '用户未授权，即将跳转！',
+              icon: 'none',
+              duration: 3000,
             })
-            .catch(err => {
-              if (err.message.includes('验证超时')) {
-                this.active -= 1
-              }
-            })
-        }
-      }
+            // uni.showModal({
+            //   title: '提示',
+            //   content: `当前用户电子健康卡未授权，即将自动前往授权页！`,
+            //   showCancel: false,
+            // })
+            setTimeout(() => {
+              uni.navigateTo({
+                url:
+                  '/pages-user/patientManagement/infoManage?fromPage=addCard',
+              })
+            }, 3000)
+          }
+        },
+        {
+          wechatcode: true,
+        },
+      )
     },
-    // 人脸识别回调
-    async getfinishAuth(bizToken) {
-      let res = await finishAuth({ bizToken: bizToken })
-      if (res) {
-        this.form.name = res.name
-        this.form.sex = res.sex
-        this.form.child = res.child
-        this.form.guardIdCard = res.guardIdCard
-        this.form.guardName = res.guardName
-        this.form.patientCard = res.patientCard
-        this.form.phone = res.phone
-        this.form.relation = res.relation
-        this.form.birthDay = res.birthDay
-        this.form.idCard = res.idCard
-        this.form.guardPhone = res.guardPhone
-        this.form.guardBirthDay = res.guardBirthDay
-        this.form.guardSex = res.guardSex
-        this.form.address = res.address
-        this.form.guardAddress = res.guardAddress
-        this.active = this.active + 1
-      }
+    authFail() {
+      console.log('失败回调', arguments)
     },
+    authCancel() {
+      console.log('取消回调', arguments)
+    },
+    //获取职业列表
+    async getDictList() {
+      this.occupation = (await getDictList()).map(v => v.name)
+    },
+    toWey() {
+      this.$refs.notice.close()
+      console.log('前往获取验证码')
+      this.toSelectCard()
+    },
+    //选择性别
+    bindPickerChange(e, name) {
+      this.form[name] = e.detail.value
+    },
+    //籍贯选择
     handleGetRegion(region, name) {
       console.log(region)
       let cityname = []
       region.forEach(i => {
         cityname.push(i.name)
       })
-      this.form[name] = cityname.join(' ')
+      this.formData[name] = cityname.join(' ')
     },
-    bindPickerChange(e, name) {
-      this.form[name] = e.detail.value
+    //changeUserVal获取身份信息
+    async changeUserVal() {
+      if (!this.formData.idCard) return
+      if (!idcard(this.formData.idCard)) {
+        uni.showToast({
+          title: '身份证号不存在,请重新输入',
+          icon: 'none',
+        })
+        return
+      }
+      const { address, birthDay, sex, child } = await getIdCardInfo({
+        idCard: this.formData.idCard,
+      })
+      Object.assign(this.formData, {
+        address:address||'重庆市市辖区万州区',
+        birthDay,
+        sex,
+      })
+      //
+      if (
+        !this.formData.child &&
+        GetAgeAndSexByIDNum(this.formData.idCard) < 18
+      ) {
+        uni.showModal({
+          title: '提示',
+          cancelText: '否',
+          confirmText: '是',
+          confirmColor: '#0AB2C1',
+          content: '身份信息与当前选择的年龄段不符，是否切换年龄段为儿童？',
+          success: res => {
+            if (res.confirm) {
+              this.formData.child = true
+            } else if (res.cancel) {
+            }
+          },
+        })
+      }
     },
+    //健康卡授权成功回调
+    authSuccess(e) {
+      console.log(e, '授权成功回调')
+      this.formData.wechatCode = e.target.result.wechatCode
+      console.log(e.target.result.wechatCode, '健康卡开放平台建卡授权码-------')
+    },
+    //成人儿童切换
     radioChange(key, val) {
-      this.two[key] = val
+      this.formData[key] = val
+      //清空输入框
+      this.formData.addressNow = ''
+      this.formData.relation = ''
+      this.formData.phone = ''
+      this.formData.phoneCode = ''
     },
+    //获取验证码
     getcode() {
-      if (this.one.phone == '') {
+      if (this.formData.phone == '') {
         uni.showToast({
           icon: 'none',
           title: '请输入手机号',
         })
         return false
       }
-      this.passClick = false
-      this.reserveCode()
-      verificationCode({ phone: this.one.phone, type: 'MEMBER_BINDING' }).then(
-        res => {
-          uni.showToast({
-            icon: 'none',
-            title: '发送成功',
-          })
-        },
-      )
+
+      verificationCode({
+        phone: this.formData.phone,
+        type: 'MEMBER_BINDING',
+      }).then(res => {
+        this.passClick = false
+        this.reserveCode()
+        uni.showToast({
+          icon: 'none',
+          title: '发送成功',
+        })
+      })
     },
+    //倒计时
     reserveCode() {
       var time = 60
       var timer = setInterval(() => {
@@ -892,116 +640,146 @@ export default {
         }
       }, 1000)
     },
+    //提交
     submit() {
-      if (this.form.name == '') {
+      if (this.validateForm()) {
         uni.showToast({
-          title: '请输入就诊人姓名',
+          title: this.validateForm(),
           icon: 'none',
         })
-        return false
+        return
       }
-      if (this.form.birthDay == '') {
-        uni.showToast({
-          title: '请选择就诊人出生日期',
-          icon: 'none',
-        })
-        return false
+      //选择健康卡后返回时再提交直接提交建卡信息--不需要人脸识别
+      if (this.isFromBack) {
+        this.subMitInfo()
+        return
       }
-      if (this.form.address == '') {
-        uni.showToast({
-          title: '请输入地址',
-          icon: 'none',
-        })
-        return false
-      }
-      if (this.form.phone == '') {
-        uni.showToast({
-          title: '请输入手机号',
-          icon: 'none',
-        })
-        return false
-      }
-      if (this.form.idCard == '') {
-        uni.showToast({
-          title: '请输入身份证号',
-          icon: 'none',
-        })
-        return false
-      }
-      if (this.form.addressNow == '') {
-        uni.showToast({
-          title: '请选择现居地',
-          icon: 'none',
-        })
-        return false
-      }
-      if (this.form.liveAddress == '') {
-        uni.showToast({
-          title: '请填写常居地',
-          icon: 'none',
-        })
-        return false
-      }
-      if (this.form.child) {
-        if (this.form.nativePlace == '') {
-          uni.showToast({
-            title: '请选择出生地',
-            icon: 'none',
-          })
-          return false
-        }
-      }
+
+      /* ************先跳过人脸识别********* */
+      //人脸识别
+      // uni.showModal({
+      //   title: '确认开启人脸识别',
+      //   content: '是否开启人脸识别？',
+      //   success: res => {
+      //     if (res.confirm) {
+      //       //先校验是否支持人脸识别
+      //       wx.checkIsSupportFacialRecognition({
+      //         checkAliveType: 2,
+      //         success: res => {
+      //           //验证通过调取人脸识别
+      //           this.inFaceValidate()
+      //         },
+      //         fail: res => {
+      //           if (res.errCode === 10001) {
+      //             wx.showToast('不支持人脸采集：设备没有前置摄像头')
+      //             //未通过后台再调后台接口验证
+      //             this.validateUserInfo()
+      //             return
+      //           }
+      //           wx.showToast(
+      //             '微信版本过低，暂时无法使用此功能，请升级微信最新版本',
+      //           )
+      //           //未通过后台再调后台接口验证
+      //           this.validateUserInfo()
+      //         },
+      //       })
+      //     }
+      //   },
+      // })
+      this.subMitInfo()
+      /* ************先跳过人脸识别* ******** */
+    },
+
+    //人脸识别
+    inFaceValidate() {
+      wx.startFacialRecognitionVerify({
+        name: this.formData.name,
+        idCardNumber: this.formData.idCard,
+        success: res => {
+          this.subMitInfo()
+        },
+      })
+    },
+    //后台手动验证身份信息
+    validateUserInfo() {
+      // await xxx({ name: this.two.name, idCardNumber: this.two.idCard })
+      //通过后进入下一步
+      this.subMitInfo()
+    },
+    //提交建卡信息_____________________________________
+    async subMitInfo() {
       uni.showLoading({
         title: '正在提交...',
       })
-      confirmPatientInfo(this.form).then(res => {
-        uni.hideLoading()
-        if (res) {
-          console.log(res)
-          this.cardList = res
-          if (res.length > 0) {
-            this.perCardId = res[0].cardNo
-            this.$refs.select.open()
-          } else {
-            this.$refs.popup.open()
-          }
-        }
-      })
-    },
-    addPatient() {
-      this.selectCard()
-      this.$refs.popup.close()
-    },
-    // 选择就诊卡
-    async selectCard() {
-      let res = await confirmCard({ cardNo: this.perCardId })
-      this.$refs.select.close()
-      if (this.page == 'DoctorDetail') {
-        let pages = getCurrentPages()
-        let currPage = pages[pages.length - 1] //当前页面
-        let prevPage = pages[pages.length - 2] //上一个页面
-        //可以打印prevPage看看
-        console.log(prevPage)
-        //#ifdef H5
-        prevPage.patient = { memberId: res.memberId, patientId: res.patientId }
-        //#endif
-        //#ifdef MP-WEIXIN
-        prevPage.setData({
-          memberId: { memberId: res.memberId, patientId: res.patientId },
-        })
-        //#endif
-        uni.navigateBack()
-      } else {
-        uni.redirectTo({
-          url: '/pages-user/patientManagement/edit?id=' + res.memberId,
+      if (this.formData.child) {
+        //儿童提交增加职业默认值
+        this.formData.careerName = '儿童'
+      }
+      const res = await submitCardInfo(this.formData)
+      console.log('提交返回------', res)
+      uni.hideLoading()
+      uni.$emit('updateCard')
+
+      // uni.redirectTo({
+      //   url: '/pages/index-user',
+      // })
+      // uni.redirectTo({
+      //   url: '/pages-user/patientManagement/edit?id=' + res.memberId,
+      // })
+      if (this.intoList) {
+        return uni.redirectTo({
+          url: '/pages/index-user',
         })
       }
+      uni.navigateBack({
+        delta: 1,
+      })
     },
-    perChange(e) {
-      this.perCardId = e.detail.value
+    //已有健康卡跳转至微信健康卡管理
+    toSelectCard() {
+      if (!this.formData.wechatCode) {
+        return
+      }
+      uni.navigateTo({
+        url: '/pages-user/patientManagement/infoManage?fromPage=addCard',
+      })
     },
-    closePer() {
-      this.$refs.select.close()
+    //验证表单
+    validateForm() {
+      const validates = {
+        phone: '请输入手机号', //手机号
+        phoneCode: '请输入验证码', //验证码
+        child: false, //是否儿童
+        name: '请输入姓名', //姓名
+        idCard: '请输入身份证号', //身份证
+        relation: '请选择关系', //关系
+        nation: '请选择民族', //民族
+        careerName: '请选择职业', //职业
+        // address: '请输入籍贯', //籍贯
+        // liveAddress: '请输入户籍地址', //户口地址
+        addressNow: '请输入现住址', //现住址
+        guardName: '请输入监护人姓名', //监护人姓名
+        guardIdCard: '请输入监护人身份证号', //监护人身份证
+        guardRelation: '请选择监护人关系', //监护人关系
+        wechatCode: '微信身份码不能为空', //微信身份码
+      }
+      const validateFormData = JSON.parse(JSON.stringify(this.formData))
+      if (!this.formData.child) {
+        delete validateFormData.guardName
+        delete validateFormData.guardIdCard
+        delete validateFormData.guardRelation
+      } else {
+        delete validateFormData.careerName
+      }
+      let validateMsg
+      for (let key in validateFormData) {
+        if (!validateFormData[key] && key !== 'child') {
+          console.log(key)
+          validateMsg = validates[key]
+          break
+        }
+      }
+      return validateMsg || ''
     },
   },
 }
@@ -1009,187 +787,123 @@ export default {
 
 <style lang="scss" scoped>
 .addWrap {
-  padding-bottom: 120rpx;
-}
-.step {
-  padding: 40rpx 70rpx;
-  padding-bottom: 20rpx;
-  position: relative;
-  .step_item {
-    .step_num {
-      width: 50rpx;
-      height: 50rpx;
-      border-radius: 50%;
-      font-size: 34rpx;
-      color: #fff;
-      text-align: center;
-      line-height: 50rpx;
-      background: #ccc;
-      margin: 0 auto;
-    }
-    .step_title {
-      font-size: 26rpx;
-      color: #ccc;
-      margin-top: 10rpx;
-      width: 110rpx;
-    }
-    &.on {
-      .step_num {
-        background: $uni-color-primary;
-      }
-      .step_title {
-        color: $uni-color-primary;
+  .inputWrap {
+    .title {
+      width: 210rpx;
+      font-size: 30rpx;
+      color: #666;
+      .red {
+        color: #ea4444;
+        position: relative;
+        top: -10rpx;
       }
     }
-  }
-  .br {
-    height: 2px;
-    background: #ccc;
-    width: 200rpx;
-    position: absolute;
-    top: 60rpx;
-    left: 150rpx;
-    &:nth-child(4) {
-      left: auto;
-      right: 150rpx;
-    }
-    &.on {
-      background: $uni-color-primary;
-    }
-  }
-}
-.inputWrap {
-  .title {
-    width: 210rpx;
-    font-size: 30rpx;
-    color: #666;
-    .red {
-      color: #ea4444;
-      position: relative;
-      top: -10rpx;
-    }
-  }
-  .title2 {
-    font-size: 30rpx;
-    color: #333;
-    font-weight: bold;
-  }
-  .getcode {
-    color: $uni-color-primary;
-  }
-  .tag {
-    /deep/.uni-tag {
-      background: #f2f2f2;
+    .title2 {
+      font-size: 30rpx;
       color: #333;
+      font-weight: bold;
     }
-    &.on {
-      /deep/.uni-tag {
-        background: $uni-color-primary;
+    .getcode {
+      color: $uni-color-primary;
+    }
+    .tag {
+      padding: 0 2px;
+      ::v-deep.uni-tag {
+        background: #f2f2f2;
+        color: #333;
+      }
+      &.on {
+        ::v-deep.uni-tag {
+          background: $uni-color-primary;
+        }
+
+        ::v-deep.uni-tag--default {
+          color: #fff;
+        }
+      }
+      &:nth-child(1) {
+        margin-right: 30rpx;
+      }
+    }
+    ::v-deep.uni-list-item--hover {
+      background: none;
+    }
+    ::v-deep.input_pla {
+      font-size: 30rpx;
+      color: #ccc;
+    }
+    input {
+      font-size: 30rpx;
+    }
+  }
+  .submit_btn {
+    position: relative;
+    margin-left: 0;
+    margin: 0 15px;
+    margin-bottom: 10px;
+    bottom: 0;
+    left: 0;
+  }
+  .botton-msg {
+    width: 100%;
+    text-align: center;
+    font-size: 15px;
+    color: #0ab2c1;
+    margin-bottom: 10px;
+  }
+  .dialog-content {
+    padding: 45rpx 0;
+    width: 600rpx;
+    background: #fff;
+    border-radius: 30rpx;
+    padding-bottom: 0;
+
+    .dialogTitle {
+      font-size: 32rpx;
+      color: #1a1a1a;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .textBox {
+      font-size: 26rpx;
+      line-height: 42rpx;
+      color: #666;
+      height: 90px;
+      padding: 0 30rpx;
+      box-sizing: border-box;
+
+      .title {
+        font-size: 28rpx;
+        margin-bottom: 20rpx;
+        color: #1a1a1a;
+        margin-top: 40rpx;
       }
 
-      /deep/.uni-tag--default {
-        color: #fff;
+      .text {
+        margin-bottom: 40rpx;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        animation-direction: alternate;
       }
     }
-    &:nth-child(1) {
-      margin-right: 30rpx;
-    }
-  }
-  /deep/.uni-list-item--hover {
-    background: none;
-  }
-  .input_pla {
-    font-size: 30rpx;
-    color: #ccc;
-  }
-  input {
-    font-size: 30rpx;
-  }
-}
-.childInfo {
-  input {
-    color: #888;
-  }
-}
-.next {
-  margin-top: 30rpx;
-  position: relative;
-  left: 0;
-  margin-left: 15px;
-  width: auto;
-  bottom: 0;
-}
-.tipWrap {
-  padding: 0 15px;
-  .tipText {
-    font-size: 24rpx;
-    color: #666;
-    text {
-      color: $uni-color-error;
+
+    .noticeBtn {
+      width: 100%;
+      height: 88rpx;
+      border-top: 1rpx solid #e9eff4;
+      line-height: 88rpx;
+      text-align: center;
+      color: $uni-color-primary;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
   }
 }
-.selectWrap {
-  position: relative;
-  z-index: 12;
-}
-.selectPer {
-  background: #fff;
-  border-radius: 40rpx 40rpx 0 0;
-  padding-top: 40rpx;
-  position: relative;
-  .title {
-    font-size: 32rpx;
-    color: #1a1a1a;
-    text-align: center;
-    margin-bottom: 30rpx;
-  }
-  .closeIcon {
-    position: absolute;
-    right: 30rpx;
-    top: 40rpx;
-  }
-  .selectList {
-    margin-top: 30rpx;
-    margin-bottom: 20rpx;
-    .perMain {
-      padding: 0 20rpx;
-      .time {
-        font-size: 24rpx;
-        color: #666;
-      }
-    }
-    .perPrice {
-      font-size: 30rpx;
-      color: #000;
-    }
-  }
-}
-.popTip {
-  width: 680rpx;
-  background: #fff;
-  border-radius: 30rpx;
-  padding-top: 50rpx;
-  .popTitle {
-    font-size: 34rpx;
-    text-align: center;
-    margin-bottom: 20rpx;
-    color: #000;
-  }
-  .popMain {
-    font-size: 30rpx;
-    line-height: 52rpx;
-    color: #888;
-    padding: 0 40rpx;
-    margin-bottom: 50rpx;
-    text-indent: 2em;
-  }
-  .popBtn {
-    color: $uni-color-primary;
-    font-size: 34rpx;
-    padding: 26rpx 0;
-    text-align: center;
-    border-top: 1px solid #f2f2f2;
-  }
+.disabled-class {
+  color: #fff;
+  background: #ccc !important;
 }
 </style>

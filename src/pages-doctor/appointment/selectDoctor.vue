@@ -2,7 +2,7 @@
   <SelectDoctor v-if="order" :order="order" :department="department" />
 </template>
 <script>
-import SelectDoctor from '@/components/clinic-appointment/select-doctor'
+import SelectDoctor from '@/pages-doctor/components/clinic-appointment/select-doctor'
 import { clinicInfo } from '@/common/request/index'
 export default {
   components: {

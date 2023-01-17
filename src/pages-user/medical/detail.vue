@@ -1,7 +1,7 @@
 <template>
   <view>
     <!-- 收到视频聊天邀请 -->
-    <video-invitation/>
+    <video-invitation />
     <!--主页按钮-->
     <homeIcom />
     <view class="app-card">
@@ -11,7 +11,7 @@
         <view class="content">{{ data.diseId }}</view>
       </view>
       <view class="flex-start-start mt-20">
-        <view class="user-title">就诊人</view>
+        <view class="user-title">健康卡</view>
         <view class="content">{{ data.medicalName }}</view>
       </view>
       <view class="flex-start-start mt-20">
@@ -32,64 +32,85 @@
 </template>
 
 <script>
-import { findDiseaseByOrderId } from '@/common/request/index.js';
+import { findDiseaseByOrderId } from '@/common/request/index.js'
 export default {
   data() {
     return {
       data: {},
       dataList: [
+        // {
+        //   key: 'mainSuit',
+        //   title: '主诉'
+        // },
+        // {
+        //   key: 'nowDisease',
+        //   title: '现病史'
+        // },
+        // {
+        //   key: 'hisDisease',
+        //   title: '既往史'
+        // },
+        // {
+        //   key: 'phyCheck',
+        //   title: '体格检查'
+        // },
+        // {
+        //   key: 'supCheck',
+        //   title: '辅助检查'
+        // },
+        // {
+        //   key: 'diagnosis',
+        //   title: '诊断'
+        // },
+        // {
+        //   key: 'dealIdea',
+        //   title: '处理意见'
+        // },
         {
-          key: 'mainSuit',
-          title: '主诉'
+          key: 'seeWay',
+          title: '就诊方式',
         },
         {
-          key: 'nowDisease',
-          title: '现病史'
-        },
-        {
-          key: 'hisDisease',
-          title: '既往史'
-        },
-        {
-          key: 'phyCheck',
-          title: '体格检查'
+          key: 'illness',
+          title: '病情',
         },
         {
           key: 'supCheck',
-          title: '辅助检查'
+          title: '辅助检查',
         },
         {
           key: 'diagnosis',
-          title: '诊断'
+          title: '初次诊断',
         },
         {
           key: 'dealIdea',
-          title: '处理意见'
-        }
-      ]
-    };
+          title: '处理意见',
+        },
+      ],
+    }
   },
   onLoad(options) {
     const params = {
-      orderId: options.orderId
-    };
-    this.findDisease(params);
+      orderId: options.orderId,
+    }
+    this.findDisease(params)
   },
   methods: {
     async findDisease(params) {
-      this.data = await findDiseaseByOrderId(params);
+      const data = await findDiseaseByOrderId(params)
 
+      this.data = data
       this.dataList = this.dataList.map(item =>
         Object.assign(item, {
-          content: this.data[item.key]
-        })
-      );
-    }
-  }
-};
+          content: data[item.key],
+        }),
+      )
+    },
+  },
+}
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .app-card {
   margin: 20rpx;
   box-sizing: border-box;

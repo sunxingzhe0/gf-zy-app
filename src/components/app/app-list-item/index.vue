@@ -7,7 +7,7 @@
     <view class="list-item-label" :style="textStyle">
       {{ label }}
     </view>
-    <view class="list-item-value">
+    <view class="list-item-value" :style="valStyle">
       <slot></slot>
       <template v-if="!$slots.default">
         {{ value }}
@@ -40,6 +40,10 @@ export default {
       default: {},
     },
     textStyle: {
+      type: String,
+      default: '',
+    },
+    valStyle: {
       type: String,
       default: '',
     },

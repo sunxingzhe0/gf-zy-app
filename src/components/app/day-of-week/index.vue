@@ -5,34 +5,39 @@
       <view class="prev-week" @click="toogleWeek(-7)">上一周</view>
       <view class="next-week" @click="toogleWeek(7)">下一周</view>
     </view>
-    <scroll-view :class="{ week }" scroll-x :scroll-left="scrollLeft" class="date-wrapper">
+    <scroll-view
+      :class="{ week }"
+      scroll-x
+      :scroll-left="scrollLeft"
+      class="date-wrapper"
+    >
       <!-- <view class="date-wrapper"> -->
-        <view
-          class="date-item"
-          :class="{ active: allActive }"
-          v-if="showAll"
-          style="padding:12rpx 0;"
-          @click="toogleActive('all')"
-        >
-          <!-- <view class="date-day" :style="{ padding: '0 16rpx' }"> -->
-            <view class="date-day">全部</view>
-            <view class="date-day">日期</view>
-          <!-- </view> -->
-        </view>
-        <view
-          v-for="(item, index) in dates"
-          :key="index"
-          class="date-item"
-          :class="{
-            tight,
-            active: item.active && !item.disabled,
-            disabled: item.disabled,
-          }"
-          @click="toogleActive(index)"
-        >
-          <view class="date-day">{{ item.day }}</view>
-          <view class="date-date">{{ item.date }}</view>
-        </view>
+      <view
+        class="date-item"
+        :class="{ active: allActive }"
+        v-if="showAll"
+        style="padding:12rpx 0;"
+        @click="toogleActive('all')"
+      >
+        <!-- <view class="date-day" :style="{ padding: '0 16rpx' }"> -->
+        <view class="date-day">全部</view>
+        <view class="date-day">日期</view>
+        <!-- </view> -->
+      </view>
+      <view
+        v-for="(item, index) in dates"
+        :key="index"
+        class="date-item"
+        :class="{
+          tight,
+          active: item.active && !item.disabled,
+          disabled: item.disabled,
+        }"
+        @click="toogleActive(index)"
+      >
+        <view class="date-day">{{ item.day }}</view>
+        <view class="date-date">{{ item.date }}</view>
+      </view>
       <!-- </view> -->
     </scroll-view>
   </view>
@@ -87,15 +92,15 @@ export default {
       dates: [],
       start: new Date().getTime(),
       allActive: false,
-      scrollLeft:0
+      scrollLeft: 0,
     }
   },
   computed: {
     days() {
       const weeks = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
 
-      weeks[new Date().getDay()] = '当天'
-      weeks[new Date().getDay() + 1] = '明天'
+      // weeks[new Date().getDay()] = '当天'
+      // weeks[new Date().getDay() + 1] = '明天'
 
       return weeks
     },
@@ -103,20 +108,23 @@ export default {
   mounted() {
     if (this.week) {
       let disDay
-      let _start = this.date || this.start
+      let _start = new Date(this.value).getTime() || this.date || this.start
       disDay = new Date(_start).getDay() - 1
       disDay = disDay < 0 ? 6 : disDay
       this.start = new Date(_start).getTime() - disDay * 24 * 3600 * 1000
     }
-    this.init()
+    this.$nextTick(() => {
+      this.init()
+    })
   },
   methods: {
     init() {
+      let start = this.start
       let propsDate
       let dates = []
       if (this.date) propsDate = this.date.substring(5)
       for (let i = 0; i < 7; i++) {
-        const dateObj = new Date(this.start + i * 24 * 3600 * 1000)
+        const dateObj = new Date(start + i * 24 * 3600 * 1000)
         const month = this.zoreFill(dateObj.getMonth() + 1)
         const _date = this.zoreFill(dateObj.getDate())
         const day = this.days[dateObj.getDay()]
@@ -136,15 +144,14 @@ export default {
           ? Object.assign(item, { disabled: true })
           : Object.assign(item, { active: item.fullDate === this.value }),
       )
-      this.$nextTick(()=>{
-            this.dates.forEach((item,index)=>{
-                if(item.fullDate == this.value){
-                    this.scrollLeft = index*30
-                    console.log(this.scrollLeft )
-                }
-            })
+      this.$nextTick(() => {
+        this.dates.forEach((item, index) => {
+          if (item.fullDate == this.value) {
+            this.scrollLeft = index * 30
+            console.log(this.scrollLeft)
+          }
+        })
       })
-
     },
     zoreFill(val) {
       return val > 9 ? val : '0' + String(val)
@@ -181,12 +188,12 @@ export default {
         ...item,
         active: item.fullDate === val,
       }))
-    //   this.dates.forEach((item,index)=>{
-    //     if(item.fullDate == val){
-    //       this.scrollLeft = index*50
-    //       console.log(this.scrollLeft)
-    //     }
-    //   })
+      //   this.dates.forEach((item,index)=>{
+      //     if(item.fullDate == val){
+      //       this.scrollLeft = index*50
+      //       console.log(this.scrollLeft)
+      //     }
+      //   })
     },
     dateDatas(value) {
       this.dates = this.dates.map(item =>
@@ -257,7 +264,7 @@ export default {
   box-sizing: border-box;
   width: 116rpx;
   height: 100rpx;
-  padding:15rpx 0;
+  padding: 15rpx 0;
   margin: 20rpx 12rpx;
   align-items: center;
   border-radius: 10rpx;

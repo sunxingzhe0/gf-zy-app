@@ -8,7 +8,7 @@
       <template v-slot:top>
         <view style="padding-left: 30rpx;">
           <app-list-item
-            label="就诊人"
+            label="健康卡"
             :styles="{ padding: '16rpx 30rpx', paddingLeft: 0 }"
           >
             <view class="flex_1 text-right color666">
@@ -63,7 +63,7 @@ import selectPatient from '../components/selectPatient.vue'
 import AppCard from '@/components/app/app-card'
 import AppListItem from '@/components/app/app-list-item'
 import selectDateRange from '../components/selectDateRange.vue'
-import leftTab from '../components/leftTab/index.vue'
+import leftTab from '@/components/leftTab/index.vue'
 import medical from './components/medical.vue'
 import online from './components/online.vue'
 import inspection from './components/inspection.vue'
@@ -88,10 +88,10 @@ export default {
           title: '预约挂号',
           key: 0,
         },
-        {
-          title: '体检预约',
-          key: 1,
-        },
+        // {
+        //   title: '体检预约',
+        //   key: 1,
+        // },
         {
           title: '线上预约',
           key: 2,
@@ -128,9 +128,9 @@ export default {
     uni.$on('SYNC_MY_RESERVE', this.init)
   },
   onShow() {
-    if (this.perId) {
-      this.init()
-    }
+    // if (this.perId) {
+    //   this.init()
+    // }
   },
   onUnload() {
     uni.$off('SYNC_MY_RESERVE')
@@ -138,7 +138,7 @@ export default {
   onReachBottom() {
     if (this.active == 1) {
       this.$refs.medical.getPageMore()
-    } else if (this.active > 2) {
+    } else if (this.active == 3 || this.active == 4) {
       this.$refs.inspection.getPageMore()
     } else if (this.active == 2) {
       this.$refs.online.getPageMore()
@@ -163,6 +163,7 @@ export default {
     },
     topbarChange(e) {
       this.active = e
+      console.log(e, '------------')
       this.$nextTick(() => {
         if (this.active > 2) {
           this.$refs.inspection.current = 1

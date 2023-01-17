@@ -2,7 +2,7 @@
   <SelectDepartment :orderId="orderId" :doctorIndexArr="doctorIndexArr" />
 </template>
 <script>
-import SelectDepartment from '@/components/clinic-appointment/select-department'
+import SelectDepartment from '@/pages-doctor/components/clinic-appointment/select-department'
 import { clinicInfo } from '@/common/request/index'
 export default {
   components: {

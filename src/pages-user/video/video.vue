@@ -1,5 +1,5 @@
 <template>
-  <view>
+  <view class="page-content">
     <preview-image
       ref="previewImage"
       :items="previewImages"
@@ -20,7 +20,7 @@
           <view class="avatar-wrapper">
             <image
               class="avatar"
-              :src="require('@/assets/user/doc-3.png')"
+              :src="require('@/assets/user/doc-3.png') || ''"
               mode="aspectFit"
             ></image>
           </view>
@@ -268,6 +268,9 @@
         ></image>
       </view>
     </view>
+    <text v-if="order.acceptsTime" class="countdown"
+      >距离结束还剩 {{ countText }} 时长</text
+    >
   </view>
 </template>
 
@@ -280,6 +283,7 @@ import {
   historyMessage,
   upload,
 } from '@/common/request/index.js'
+import dayjs from 'dayjs'
 export default {
   data() {
     return {
@@ -317,6 +321,8 @@ export default {
       systemInfo: uni.getSystemInfoSync(),
       previewImageCurrent: 0,
       initiativeLeave: true, //是否主动挂断视频，默认主动，收到对方离开的消息则改为被动
+      timer: null, //定时器
+      countText: '00:00:00',
     }
   },
   computed: {
@@ -395,8 +401,23 @@ export default {
         childMessageType: this.$protobufMessageType.CRVIDEO,
       })
     }
+    //清除倒计时
+    clearInterval(this.timer)
   },
   methods: {
+    getCountDownText() {
+      //还剩多少秒
+      const difference =
+        dayjs(this.order.acceptsTime).add(30, 'minute') - dayjs()
+      if (difference < 0) {
+        return (this.countText = '00:00:00')
+      }
+      const minute = Math.floor((difference / 1000 / 60) % 60)
+      const ss = Math.floor((difference / 1000) % 60)
+      this.countText = `00:${minute < 10 ? '0' + minute : minute}:${
+        ss < 10 ? '0' + ss : ss
+      }`
+    },
     agoraInit() {
       this.client = new AgoraSDK.Client()
       this.client.on(
@@ -491,6 +512,10 @@ export default {
         bizTypeValue: bizTypeEnums[order.bizType],
         wayTypeValue: wayTypeEnums[order.wayType],
       })
+      //开启倒计时
+      this.timer = setInterval(() => {
+        this.getCountDownText()
+      }, 1000)
     },
     back() {
       uni.navigateBack({
@@ -498,13 +523,10 @@ export default {
       })
     },
     inputChange(event) {
-      const value = event.detail.value
-
-      if (!value) return
-
-      this.inputValue = value
+      event.detail.value && (this.inputValue = event.detail.value)
     },
-    inputConfirm(event) {
+    inputConfirm() {
+      console.log(this.inputValue, '=====')
       if (!this.inputValue) return
 
       this.sendMessage({
@@ -520,7 +542,6 @@ export default {
       value,
       childMessageType = this.$protobufMessageType.DEFAULT,
     }) {
-      console.log(this.$store.state)
       const form = {
         fromNickName: this.fromNickName,
         to: this.bizInfo.sessionId,
@@ -547,7 +568,7 @@ export default {
       const params = {
         userId: this.userId,
         sessionId: this.bizInfo.sessionId,
-        msgId: this.messageBox[0] ? this.messageBox[0].msgId : -1,
+        msgId: this.messageBox[0]?.msgId || -1,
       }
 
       const data = await historyMessage(params)
@@ -569,18 +590,16 @@ export default {
       this.pageToBottom()
     },
     pageToBottom() {
-      this.$nextTick(() => {
-        const node = uni
+      this.$nextTick(() =>
+        uni
           .createSelectorQuery()
           .in(this)
           .select('#message-box')
-
-        node
           .boundingClientRect(({ height }) => {
             height > 300 && (this.scrollTop = height - 300)
           })
-          .exec()
-      })
+          .exec(),
+      )
     },
     toolBarShowFunc() {
       this.toolBarShow = !this.toolBarShow
@@ -838,6 +857,17 @@ page {
     font-size: 24rpx;
     text-align: center;
     color: #666;
+  }
+}
+.page-content {
+  position: relative;
+  .countdown {
+    position: absolute;
+    top: 125rpx;
+    color: #fff;
+    z-index: 99999;
+    width: 100%;
+    text-align: center;
   }
 }
 </style>

@@ -140,6 +140,13 @@ export default {
 
     uni.$on('SocketConnect', this.onSocketConnect)
     uni.$on('onMessage', this.messageHandler)
+    //监听同步指令更新诊室会话列表
+    uni.$on('sync', data => {
+      if (data === 'SYNC_SESSION') {
+        console.log(data, '同步指令更新会话列表')
+        this.getDoctorSessionData()
+      }
+    })
   },
   onHide() {
     uni.$off('SocketConnect', this.onSocketConnect)
@@ -288,22 +295,15 @@ export default {
       }
     },
     topbarChange(status) {
-      this.status = status
-      if (this.navTitle == 'REPEAT_CLINIC' && status == 'WAIT_TREAT') {
-        this.wayType = 1
-      } else {
-        this.wayType = ''
-      }
-
+      this.wayType =
+        this.navTitle == 'REPEAT_CLINIC' && status == 'WAIT_TREAT' ? 1 : ''
       this.status = status
       this.currentNum = 1
       this.interval && clearInterval(this.interval)
 
-      if (status == 'WAIT_TREAT' || status == 'FINISH') {
-        this.$refs.date.calendarToday()
-      } else {
-        this.$refs.date.clearDate()
-      }
+      status == 'WAIT_TREAT' || status == 'FINISH'
+        ? this.$refs.date.calendarToday()
+        : this.$refs.date.clearDate()
     },
     async switchChange(event) {
       const value = event.target.value
@@ -362,9 +362,11 @@ export default {
       }
     },
     onSocketConnect() {
-      uni.setNavigationBarTitle({
-        title: this.webSocket.getSocketConnect() || '我的诊室',
-      })
+      if (this.webSocket.getSocketConnect()) {
+        uni.setNavigationBarTitle({
+          title: this.webSocket.getSocketConnect() || '我的诊室',
+        })
+      }
     },
   },
 }

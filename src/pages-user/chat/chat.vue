@@ -9,7 +9,9 @@
       class="container wait-container"
       v-if="
         order.wayType == 'VIDEO' &&
-          ['APPOINTMENT', 'WAIT_TREAT'].includes(order.status)
+          ['APPOINTMENT', 'WAIT_TREAT'].includes(order.status) &&
+          order.queue == 0 &&
+          order.status !== 'WAIT_TREAT'
       "
     >
       <view class="container-bg">
@@ -40,7 +42,7 @@
         <view class="flex-start-center">
           <view>{{ bizTypeEnums[bizInfo.bizType] }}</view>
           <view class="ml-50">
-            就诊人：
+            健康卡：
             <text class="doctor-name">{{ bizInfo.memberName }}</text>
           </view>
         </view>
@@ -76,7 +78,7 @@
           </view>
         </view>
         <view class="top-bar__expand_cell flex-start-center">
-          <view class="top-bar__expand_cell_label">就诊人</view>
+          <view class="top-bar__expand_cell_label">健康卡</view>
           <view class="top-bar__expand_cell_value">{{
             bizInfo.memberName
           }}</view>
@@ -277,9 +279,24 @@
       "
     >
       <view v-if="order.bizType == 'CONSULT'" class="question-tip">
-        本次服务，您可以向医生咨询
+        <!-- 本次服务，您可以向医生咨询
         <text style="color: #e45c5c;">{{ order.questionNum || 0 }}</text>
-        个问题
+        个问题 -->
+        {{
+          order.wayType === 'VIDEO'
+            ? '本次服务，咨询时长25～30分钟，请您等待咨询师发起视频'
+            : '请您耐心等待咨询师回复，本次服务回复内容供您参考。'
+        }}
+      </view>
+      <view
+        v-if="order.status == 'WAIT_TREAT' && queueInfo.sortNum > 0"
+        class="question-tip"
+      >
+        {{
+          `当前队列 ${
+            queueInfo.sortNum
+          }，预计等候时长为 ${queueInfo.expectPeriod / 60} 分钟。`
+        }}
       </view>
       <message-box
         :messageBox="messageBox"
@@ -377,6 +394,8 @@ import {
   findDiagContentById,
   findDiagByDiagId,
   over,
+  usersTopChat,
+  userQueue,
 } from '@/common/request/index.js'
 export default {
   data() {
@@ -395,6 +414,11 @@ export default {
           image: require('@/assets/paishe@2x.png'),
           title: '拍照',
           event: 'camera',
+        },
+        {
+          image: require('@/assets/quxiaowenzhen.png'),
+          title: '取消问诊',
+          event: 'endroom',
         },
       ],
       bizTypeEnums: {
@@ -427,6 +451,7 @@ export default {
       interval: null,
       newMessage: null,
       isAllRp: false,
+      queueInfo: {}, //排队信息
     }
   },
   computed: {
@@ -443,12 +468,15 @@ export default {
         (this.order.speak ||
           this.order.bizType == 'CONSULT' ||
           (this.order.bizType == 'REPEAT_CLINIC' &&
-            this.order.wayType == 'GRAPHIC'))
+            (this.order.wayType == 'GRAPHIC' || this.order.wayType == 'VIDEO')))
       )
     },
   },
   async onLoad(options) {
     this.order = options
+    if (options.bizId && !options.orderId) {
+      Object.assign(this.order, { orderId: options.bizId })
+    }
 
     await this.getBizInfo()
     this.getHistoryMessage()
@@ -466,6 +494,16 @@ export default {
     }
   },
   onShow() {
+    if (this.webSocket.getSocketConnect()) {
+      this.webSocket.connectSocket()
+      setTimeout(() => {
+        uni.setNavigationBarTitle({
+          title:
+            this.webSocket.getSocketConnect() ||
+            `${this.bizInfo.doctorName}的诊室`,
+        })
+      }, 1000)
+    }
     this.getClinicInfo()
     uni.$on('SocketConnect', this.onSocketConnect)
     uni.$on('onMessage', this.messageHandler)
@@ -479,6 +517,7 @@ export default {
     this.interval && clearInterval(this.interval)
     uni.$off('SocketConnect', this.onSocketConnect)
     uni.$off('onMessage', this.messageHandler)
+    uni.$off('sync')
   },
   async onPullDownRefresh() {
     try {
@@ -488,6 +527,10 @@ export default {
     uni.stopPullDownRefresh()
   },
   methods: {
+    //获取排队数量时间
+    async getQueueInfo(doctorId, orderId) {
+      this.queueInfo = await userQueue({ doctorId, orderId })
+    },
     openRp(show, index) {
       this.$set(this.bizInfo.historyRpList[index], 'isRpshow', !show)
     },
@@ -495,7 +538,7 @@ export default {
       const params = {
         userId: this.userId,
         sessionId: this.bizInfo.sessionId,
-        msgId: this.messageBox[0] ? this.messageBox[0].msgId : -1,
+        msgId: this.messageBox[0]?.msgId || -1,
       }
       const data = await historyMessage(params)
       const list = data
@@ -517,10 +560,9 @@ export default {
     },
     // 业务信息
     async getBizInfo() {
-      const params = {
+      this.bizInfo = await clinicBizInfo({
         orderId: this.order.orderId,
-      }
-      this.bizInfo = await clinicBizInfo(params)
+      })
     },
     // 诊室信息
     async getClinicInfo() {
@@ -528,9 +570,11 @@ export default {
         orderId: this.order.orderId,
       }
       const order = await clinicInfo(params)
+      //获取排队信息
+      this.getQueueInfo(order.doctorId, order.orderId)
       this.order = { ...order }
 
-      const { status, createTime, startTime, closeTime, bizType } = order
+      const { status, startTime, closeTime, bizType } = order
 
       let countDownTimestamp = ''
       if (bizType == 'REPEAT_CLINIC' && status == 'APPOINTMENT' && startTime) {
@@ -547,16 +591,18 @@ export default {
       } else {
         this.interval && clearInterval(this.interval)
       }
+
+      //诊室状态判读是否需要取消问诊按钮
+      if (this.order.status !== 'WAIT_TREAT') {
+        this.chatTools = this.chatTools.filter(i => i.event !== 'endroom')
+      }
     },
     toolbarShowFunc() {
-      this.toolBarShow = !this.toolBarShow
-      this.toolBarShow && this.pageScroll()
+      ;(this.toolBarShow = !this.toolBarShow) && this.pageScroll()
     },
     inputChange(event) {
       const value = event.detail.value
-      if (!value) return
-
-      this.inputValue = value
+      value && (this.inputValue = value)
     },
     inputConfirm(event) {
       if (!this.inputValue || this.webSocket.getSocketConnect()) return
@@ -602,6 +648,29 @@ export default {
     },
     toolListener(e) {
       const event = e.currentTarget.dataset.event
+      if (event === 'endroom') {
+        //取消问诊调用
+        uni.showModal({
+          title: '提示',
+          content: '是否确认？',
+          cancelText: '否',
+          confirmText: '是',
+          success: async ({ confirm }) => {
+            if (confirm) {
+              const params = {
+                orderId: this.order.orderId,
+              }
+              await usersTopChat(params)
+              uni.showToast({
+                title: '取消成功！',
+                icon: 'none',
+              })
+              setTimeout(this.getClinicInfo, 100)
+            }
+          },
+        })
+        return
+      }
       this[event]()
     },
     chooseImage() {
@@ -643,15 +712,6 @@ export default {
           `${this.bizInfo.doctorName}的诊室`,
       })
     },
-    messageHandler(payload) {
-      const info = payload.info || payload
-      if (info.to != `#${this.order.sessionId}`) return
-
-      info.msgId && this.webSocket.sendMessageCallback(this.order.sessionId)
-
-      this.messageBox.push({ ...info })
-      this.pageScroll()
-    },
     back() {
       uni.navigateBack({
         delta: 1,
@@ -692,8 +752,8 @@ export default {
     async viewDIAS(diagId) {
       let content = ''
       if (diagId) {
-        let list = await findDiagByDiagId({
-          diagId: diagId,
+        const list = await findDiagByDiagId({
+          diagId,
         })
         content = list
           .map(
@@ -751,6 +811,25 @@ export default {
     },
     messageHandler(payload) {
       const info = payload.info || payload
+      //开了病历 刷新诊室
+      if (info.childMessageType === 'EMH') {
+        this.getClinicInfo()
+      }
+      //判断是否接收到当前诊室的终止服务消息-确认弹窗提示退出诊室
+      if (
+        (info.childMessageType === 'SV' || info.childMessageType === 33) &&
+        info.to === `#${this.order.sessionId}`
+      ) {
+        uni.showModal({
+          title: '提示',
+          content: '当前服务已结束，请退出诊室！',
+          success: e => {
+            uni.navigateBack({
+              delta: 1,
+            })
+          },
+        })
+      }
       if (info.to != `#${this.order.sessionId}`) return
 
       this.messageBox.push({ ...info })
@@ -779,7 +858,6 @@ export default {
       )
     },
     goTopersion() {
-      console.log(111111)
       uni.navigateTo({
         url: `/pages-user/prescription/prescription?orderId=${this.order.orderId}`,
       })
@@ -1068,7 +1146,7 @@ page {
 .question-tip {
   width: 70%;
   margin: 40rpx auto 0;
-  padding: 12rpx 0;
+  padding: 12rpx 10rpx;
   border-radius: 40rpx;
   text-align: center;
   font-size: 24rpx;

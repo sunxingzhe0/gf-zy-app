@@ -44,16 +44,20 @@ export default {
       type: Boolean,
       default: false,
     },
+    price: String,
   },
   data() {
     return {
-      orderId: '', //订单id
+      isCanPay: true, //是否可调用预支付
+      isNucleic: false, //是否为核酸付款
+      oldOrderId: '', //诊室订单id
+      orderId: '', //支付订单id
       payType: 0,
       payTypes: [
         {
           url: require('@/assets/wx_pay.png'),
           name: '微信支付',
-          type: 'WECHAT_PAY',
+          type: 'ICBC_PAY',
         },
         // {
         //   url: require("../../../static/user/zfb_pay.png"),
@@ -70,6 +74,11 @@ export default {
         //   name: "银联支付",
         //   type: ""
         // }
+        {
+          url: require('@/assets/xianxia.png'),
+          name: '现金支付',
+          type: 'OFFLINE_PAY',
+        },
       ],
       countDownTime: '', //用于手机端取消支付返回
       currentTime: '',
@@ -100,27 +109,46 @@ export default {
       this.$emit('payTap', this.payTypes[this.payType].type)
     },
     //支付
-    payTypeC(orderId, tradeType) {
+    payTypeC(orderId, tradeType, price, oldOrderId, isNucleic) {
+      if (!this.isCanPay) return
+      this.isCanPay = false
+      console.log(
+        { orderId, tradeType, price, oldOrderId, isNucleic },
+        '接收参数---------',
+      )
+      this.isNucleic = isNucleic //核酸支付
+      this.oldOrderId = oldOrderId //订单id 非支付单id
       //订单预支付
       if (orderId) {
         this.orderId = orderId
+        this.tradeType = tradeType
+        this.price = price
+        this.oldOrderId = oldOrderId
       }
-      //#ifdef H5 ||APP-PLUS
-      //接口需要重新修改
-
-      //#endif
       uni.showLoading({
         title: '正在调取支付',
       })
+
       prepay({
         orderId: this.orderId,
-        payType: this.payTypes[this.payType].type,
         tradeType: tradeType || 'ORDER',
-        //#ifdef H5 ||APP-PLUS
+        price: price,
         clientType: 'NATIVE',
-        //#endif
+        payType: this.payTypes[this.payType].type,
+        payWay: 'WX_JSAPI',
+        openId: uni.getStorageSync('openId'),
       })
         .then(data => {
+          //线下支付（调试使用）
+          if (data?.isPay) {
+            uni.showToast('支付成功！')
+            paySuccess({
+              orderId: data.orderId,
+            }).then(data => {
+              this.$emit('success', data.orderId)
+            })
+            return
+          }
           if (data) {
             console.log('》》》预支付参数' + JSON.stringify(data))
 
@@ -137,16 +165,19 @@ export default {
             }
             //#endif
 
+            console.log('调取支付------------------')
             //#ifdef MP-WEIXIN
             uni.requestPayment({
               provider: 'wxpay',
-              timeStamp: data.timeStamp,
-              nonceStr: data.nonceStr,
+              timeStamp: data.timestamp,
+              nonceStr: data.noncestr,
               package: data.package,
               signType: data.signType,
               paySign: data.paySign || data.sign,
               success: res => {
                 //调用接口通知后端支付成功
+                console.log('支付成功-----------------------')
+                // this.getPaySuccess(this.oldOrderId)
                 this.getPaySuccess(this.orderId)
               },
               fail: err => {
@@ -155,26 +186,36 @@ export default {
                   this.paymentTips(data.countDownTime, data.currentTime)
                 }
               },
+              complete: () => {
+                console.log('接口调用结束')
+              },
             })
             //#endif
           }
+        }) /* 
+        .fail(() => {
+          console.log('调取失败-------------------------')
+        }) */
+        .finally(() => {
+          uni.hideLoading()
+          this.isCanPay = true
         })
-        .finally(() => uni.hideLoading())
 
       this.$refs.paypopup.close()
     },
     payRadioChange(evt) {
       this.payType = parseInt(evt.target.value)
+      console.log(this.payType, '支付方式')
     },
     getPaySuccess(orderId) {
       uni.showLoading({
         title: '请稍等',
       })
       paySuccess({
-        orderId: orderId,
+        orderId: this.orderId,
       })
         .then(data => {
-          this.$emit('success', orderId)
+          this.$emit('success', this.orderId)
         })
         .finally(() => uni.hideLoading())
     },
@@ -190,30 +231,43 @@ export default {
      *继续支付
      */
     paymentTips(countDownTime, currentTime) {
-      if (!countDownTime || !currentTime) {
-        this.$emit('cancel', this.orderId)
-        return
+      if (!this.isNucleic) {
+        //非核酸预约才检测
+        if (!countDownTime || !currentTime) {
+          this.$emit('cancel', this.orderId)
+          return
+        }
       }
-
-      uni.showModal({
-        title: '系统消息',
-        content:
-          '您的订单在' +
-          this.countdown(countDownTime, currentTime) +
-          '内未支付将被取消，请尽快完成支付',
-        cancelText: '确认离开',
-        confirmText: '继续支付',
-        confirmColor: '#0AB2C1',
-        cancelColor: '#666666',
-        success: res => {
-          if (res.confirm) {
-            this.payTypeC(this.orderId)
-          } else if (res.cancel) {
-            //取消
-            this.$emit('cancel', this.orderId)
-          }
-        },
-      })
+      uni.showLoading()
+      setTimeout(() => {
+        uni.hideLoading()
+        uni.showModal({
+          title: '系统消息',
+          content: this.isNucleic
+            ? '请注意及时缴费，以免订单失效。'
+            : '您的订单在' +
+              this.countdown(countDownTime, currentTime) +
+              '内未支付将被取消，请尽快完成支付',
+          cancelText: '确认离开',
+          confirmText: '继续支付',
+          confirmColor: '#0AB2C1',
+          cancelColor: '#666666',
+          success: res => {
+            if (res.confirm) {
+              // 订单存在取列表item orderId  "ORDER"  fee
+              this.payTypeC(
+                this.orderId,
+                this.tradeType,
+                this.price,
+                this.oldOrderId,
+              )
+            } else if (res.cancel) {
+              //取消
+              this.$emit('cancel', this.oldOrderId)
+            }
+          },
+        })
+      }, 1200) //后台接口限制五秒后才能继续支付
     },
     closePop() {
       this.$refs.paypopup.close()

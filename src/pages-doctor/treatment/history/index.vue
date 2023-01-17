@@ -1,10 +1,13 @@
 <template>
-  <view
-    class="treatment-history"
-  >
-    <app-card styles="margin-bottom: 0;padding: 20rpx;">
+  <view class="treatment-history">
+    <app-card
+      styles="margin-bottom: 0;padding: 20rpx; border-radius: 0 0 20rpx 20rpx;"
+    >
       <!-- 时间选择器 -->
-      <view class="flex-between">
+      <view
+        class="flex-between"
+        style=" border-bottom: 1px solid #E6E6E6; padding-bottom: 8px;"
+      >
         <view>创建日期</view>
         <view class="flex-start-center">
           <picker
@@ -81,7 +84,7 @@
 
 <script>
 import AppCard from '@/components/app/app-card/index.vue'
-import AppTab from '@/components/app/app-tab-view/app-tab.vue'
+import AppTab from '@/pages-doctor/components/app-tab-view/app-tab.vue'
 import TreatmentItem from '../../components/treatment-item/index.vue'
 import { doctorAdviceList, doctorBatchOpera } from '@/common/request/advice'
 export default {

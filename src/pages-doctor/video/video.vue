@@ -1,5 +1,5 @@
 <template>
-  <view>
+  <view class="page-content">
     <preview-image
       ref="previewImage"
       :items="previewImages"
@@ -151,11 +151,15 @@
         ></image>
       </view>
     </view>
+    <text v-if="roomInfo.acceptsTime" class="countdown"
+      >距离结束还剩 {{ countText }} 时长</text
+    >
   </view>
 </template>
 <script>
 const AgoraSDK = require('../../common/mini-app-sdk-production.js')
 import Archives from '../components/Archives.vue'
+import dayjs from 'dayjs'
 import {
   clinicInfo,
   video,
@@ -215,6 +219,8 @@ export default {
       systemInfo: uni.getSystemInfoSync(),
       previewImageCurrent: 0,
       initiativeLeave: true, //是否主动挂断视频，默认主动，收到对方离开的消息则改为被动
+      timer: null, //定时器
+      countText: '00:00:00',
     }
   },
   computed: {
@@ -233,6 +239,7 @@ export default {
     this.getHistoryMessage()
     this.getClinicInfo()
     this.webSocket.sendMessageCallback(options.sessionId)
+    uni.$emit('handelVideoPage', 1)
   },
   async onReady() {
     uni.$on('onMessage', this.messageHandler)
@@ -277,6 +284,7 @@ export default {
     }
   },
   onUnload() {
+    uni.$emit('handelVideoPage', 0)
     if (this.initiativeLeave) {
       this.sendMessage({
         value: 'leave',
@@ -284,8 +292,23 @@ export default {
       })
     }
     this.client.leave()
+    //清除倒计时
+    clearInterval(this.timer)
   },
   methods: {
+    getCountDownText() {
+      //还剩多少秒
+      const difference =
+        dayjs(this.roomInfo.acceptsTime).add(30, 'minute') - dayjs()
+      if (difference < 0) {
+        return (this.countText = '00:00:00')
+      }
+      const minute = Math.floor((difference / 1000 / 60) % 60)
+      const ss = Math.floor((difference / 1000) % 60)
+      this.countText = `00:${minute < 10 ? '0' + minute : minute}:${
+        ss < 10 ? '0' + ss : ss
+      }`
+    },
     agoraInit() {
       this.client = new AgoraSDK.Client()
       this.client.on(
@@ -361,6 +384,10 @@ export default {
       this.$nextTick(() => {
         this.agoraInit()
       })
+      //开启倒计时
+      this.timer = setInterval(() => {
+        this.getCountDownText()
+      }, 1000)
     },
     inputChange(event) {
       const value = event.detail.value
@@ -683,5 +710,16 @@ page {
   width: 60rpx;
   height: 60rpx;
   margin: 12rpx 0;
+}
+.page-content {
+  position: relative;
+  .countdown {
+    position: absolute;
+    top: 125rpx;
+    color: #fff;
+    z-index: 99999;
+    width: 100%;
+    text-align: center;
+  }
 }
 </style>
